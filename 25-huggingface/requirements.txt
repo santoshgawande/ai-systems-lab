@@ -1,0 +1,5 @@
+transformers
+torch
+# bitsandbytes   # for INT4/INT8 quantization (Linux/Windows only)
+# accelerate     # for multi-GPU and MPS support
+# sentencepiece  # for some tokenizers

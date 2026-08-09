@@ -1,0 +1,2 @@
+httpx
+# openai  # for moderation API: pip install openai

@@ -1,0 +1,4 @@
+pdfplumber
+# pymupdf      # alternative: faster, better for scanned PDFs (pip install pymupdf)
+# pypdf        # lightweight: metadata + text only
+httpx
