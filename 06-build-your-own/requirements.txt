@@ -1,0 +1,13 @@
+# Install per-project deps:
+# cd mini-claude-code && pip install -r requirements.txt
+# etc.
+#
+# Or install everything at once:
+anthropic
+openai
+httpx
+fastapi
+uvicorn[standard]
+pydantic
+tiktoken
+sentence-transformers
