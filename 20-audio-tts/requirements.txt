@@ -1,0 +1,4 @@
+openai
+httpx
+# For local Whisper (optional):
+# faster-whisper

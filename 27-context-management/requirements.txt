@@ -1,0 +1,3 @@
+httpx
+# tiktoken  # OpenAI tokenizer: pip install tiktoken
+# anthropic  # for token counting: pip install anthropic

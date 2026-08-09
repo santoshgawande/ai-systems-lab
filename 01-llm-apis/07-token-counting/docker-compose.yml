@@ -1,0 +1,39 @@
+services:
+
+  # ── Core token counting labs (no Ollama needed) ──────────────────────────
+
+  lab01-tokenizer-basics:
+    build: .
+    command: python 01_tokenizer_basics.py
+    profiles: [lab01]
+
+  lab04-mcp-overhead:
+    build: .
+    command: python 04_mcp_token_overhead.py
+    profiles: [lab04]
+
+  lab05-cost-optimisation:
+    build: .
+    command: python 05_cost_optimisation.py
+    profiles: [lab05]
+
+  # ── Ollama running on host ────────────────────────────────────────────────
+  # Uses host.docker.internal to reach Ollama on your Mac host (port 11434).
+
+  lab02-ollama-usage:
+    build: .
+    command: python 02_ollama_usage_fields.py
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434/api/chat
+      - OLLAMA_MODEL=llama3.2:3b
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles: [lab02]
+
+  # ── MCP server (standalone, for inspection) ───────────────────────────────
+
+  mcp-server:
+    build: .
+    command: python 03_mini_mcp_server.py
+    profiles: [mcp]
+

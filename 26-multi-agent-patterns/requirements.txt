@@ -1,0 +1,3 @@
+httpx
+# openai        # pip install openai
+# anthropic     # pip install anthropic

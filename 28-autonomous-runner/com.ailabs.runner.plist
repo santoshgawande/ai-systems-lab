@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  macOS launchd service: runs the autonomous runner at 5:10am daily.
+  This means it will start fresh after the quota resets overnight.
+
+  INSTALL (run once):
+    cp com.ailabs.runner.plist ~/Library/LaunchAgents/
+    launchctl load ~/Library/LaunchAgents/com.ailabs.runner.plist
+
+  UNINSTALL:
+    launchctl unload ~/Library/LaunchAgents/com.ailabs.runner.plist
+    rm ~/Library/LaunchAgents/com.ailabs.runner.plist
+
+  CHECK STATUS:
+    launchctl list | grep ailabs
+
+  VIEW LOGS:
+    cat /tmp/ailabs-runner.log
+    cat /tmp/ailabs-runner-err.log
+
+  EDIT PATHS BELOW:
+    Change WorkingDirectory and ProgramArguments to match your actual paths.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.ailabs.runner</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/santosh/workspace/github/ai-systems-lab/28-autonomous-runner/runner.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/santosh/workspace/github/ai-systems-lab</string>
+
+  <!-- Run at 5:10am daily (after quota resets at ~5am) -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>5</integer>
+    <key>Minute</key>
+    <integer>10</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/ailabs-runner.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/ailabs-runner-err.log</string>
+
+  <!-- Restart if it exits non-zero -->
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+
+  <!-- Environment: add claude to PATH -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/santosh/.local/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/Users/santosh</string>
+    <key>CLAUDE_MODEL</key>
+    <string>sonnet</string>
+    <key>QUOTA_RESET_HOUR</key>
+    <string>5</string>
+    <key>TASK_BUDGET_USD</key>
+    <string>0.50</string>
+  </dict>
+</dict>
+</plist>
