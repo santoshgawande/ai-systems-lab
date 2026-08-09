@@ -1,0 +1,2 @@
+# No external dependencies — uses only stdlib + the claude CLI
+# claude CLI: npm install -g @anthropic-ai/claude-code
