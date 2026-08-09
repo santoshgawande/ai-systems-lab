@@ -29,6 +29,10 @@ __pycache__/
 venv/
 env/
 
+# Generated vector indexes — rebuilt by each project's ingest step
+**/data/chroma/
+**/*.sqlite3
+
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
