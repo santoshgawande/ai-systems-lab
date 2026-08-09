@@ -12,6 +12,11 @@ Build simplified versions of real AI systems from scratch. The highest-leverage 
 | `mini-copilot/` | Fill-in-the-middle code completion | FIM prompting, context injection, prefix/suffix pattern |
 | `mini-eval-framework/` | CI-ready LLM test suite | Eval design, LLM-as-judge, severity scoring, CI integration |
 | `mini-ai-gateway/` | LLM proxy with auth, routing, logging, fallback | Production gateway patterns, FastAPI middleware, multi-provider |
+| `rag-agent/` | Full RAG app: router agent + tools + Streamlit inspector, in Docker | How retrieval, routing and grounding compose — and what each stage actually returns |
+
+`rag-agent/` is the one full application here. `mini-rag/` teaches the pipeline in a
+single file; `rag-agent/` adds a router agent, a tool registry, and an inspector that
+shows the retrieved chunks and their scores. Build `mini-rag` first.
 
 ## Run each project
 
@@ -46,6 +51,12 @@ cd mini-ai-gateway
 pip install -r requirements.txt
 python gateway.py
 # In another terminal: curl http://localhost:8000/v1/chat/completions ...
+
+# rag-agent: full app in Docker, no .env needed
+cd rag-agent
+docker compose up -d --build
+docker compose exec ollama ollama pull llama3.2   # one time
+# Open http://localhost:8501, then "📥 Ingest data/docs" in the sidebar
 ```
 
 ## Why build your own?

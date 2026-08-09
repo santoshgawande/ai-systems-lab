@@ -45,3 +45,17 @@ Query
 - Overlap between chunks prevents answers from being cut at a chunk boundary
 - The retrieval step is a nearest-neighbor search in vector space — not keyword matching
 - Re-ranking (cross-encoder) improves precision over cosine similarity alone
+
+## Where to go next
+
+These four labs teach each stage in isolation. To see them composed:
+
+- [`../06-build-your-own/mini-rag/`](../06-build-your-own/mini-rag/) — the whole
+  pipeline in a single 187-line file
+- [`../06-build-your-own/rag-agent/`](../06-build-your-own/rag-agent/) — a full app
+  with a router agent and an inspector that shows retrieved chunks and their scores
+
+Related techniques that plug into this pipeline live in
+[`../18-hybrid-search/`](../18-hybrid-search/) (BM25 + RRF),
+[`../21-reranking/`](../21-reranking/) (cross-encoder, MMR) and
+[`../08-evals/`](../08-evals/) (measuring whether any of it helped).
