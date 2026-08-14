@@ -5,6 +5,33 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `06-build-your-own/rag-agent/` — the full RAG application, moved in from the
+  standalone `rag-agent-lab` directory, which had never been placed under version
+  control. Router agent, tool registry (RAG search, safe calculator, web search),
+  and a Streamlit inspector that shows retrieved chunks with similarity scores.
+  Runs on Docker with an embedded Chroma store and a bundled Ollama service, so it
+  needs neither the homelab nor an API key.
+- Cross-links between the three RAG levels — `03-rag/` (stages in isolation),
+  `06-build-your-own/mini-rag/` (one file) and `06-build-your-own/rag-agent/`
+  (full app) — so the overlap reads as a deliberate progression.
+
+### Changed
+
+- `rag-agent`'s Compose file no longer requires a `.env`. `OLLAMA_BASE_URL`
+  defaults to the Compose service hostname, which `app/config.py`'s `localhost`
+  default gets wrong inside a container.
+
+### Security
+
+- `.gitignore` now excludes generated vector indexes (`**/data/chroma/`,
+  `**/*.sqlite3`).
+- The standalone project's `.env`, which held a live `ANTHROPIC_API_KEY`, was not
+  carried across. Only `.env.example` moved.
+
 ## [0.1.0] — 2026-08-09
 
 The labs had been written against the March scaffold but never committed. This

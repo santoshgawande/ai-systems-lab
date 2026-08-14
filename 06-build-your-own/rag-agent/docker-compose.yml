@@ -1,0 +1,34 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    env_file:
+      # Optional: the defaults in app/config.py are enough to run in ollama mode,
+      # so a clean clone starts without any .env at all.
+      - path: .env
+        required: false
+    environment:
+      # app/config.py defaults to localhost, which is wrong inside a container.
+      # Compose interpolates .env here too, so a user override still wins.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    volumes:
+      # Persist the vector store + let you edit docs without rebuilding.
+      - ./data:/app/data
+      # Cache the downloaded embedding model between runs.
+      - hf-cache:/root/.cache/huggingface
+    depends_on:
+      - ollama
+
+  # Local LLM backend. Used when LLM_PROVIDER=ollama (the default).
+  # If you only use the Anthropic backend you can ignore this service.
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+volumes:
+  hf-cache:
+  ollama-models:
