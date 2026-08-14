@@ -10,7 +10,7 @@ class Config:
 
     # Anthropic (cloud)
     anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
-    anthropic_model: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+    anthropic_model: str = os.getenv("ANTHROPIC_MODEL", "claude-3-7-sonnet-20250219")
 
     # Ollama (local, free)
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
