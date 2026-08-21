@@ -164,23 +164,24 @@ TEST_CASES = [
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== CONSTITUTIONAL AI SELF-CRITIQUE DEMO ===\n")
+if __name__ == "__main__":
+    print("=== CONSTITUTIONAL AI SELF-CRITIQUE DEMO ===\n")
 
-print("Constitution principles:")
-for i, p in enumerate(PRINCIPLES, 1):
-    print(f"  {i}. {p}")
-print()
+    print("Constitution principles:")
+    for i, p in enumerate(PRINCIPLES, 1):
+        print(f"  {i}. {p}")
+    print()
 
-# Check LLM availability
-try:
-    httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
-    ollama_ok = True
-except Exception:
-    ollama_ok = False
+    # Check LLM availability
+    try:
+        httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
+        ollama_ok = True
+    except Exception:
+        ollama_ok = False
 
-if not ollama_ok and not OPENAI_KEY and not ANTHROPIC_KEY:
-    print("No LLM available. Start Ollama or set OPENAI_API_KEY / ANTHROPIC_API_KEY\n")
-    print("""
+    if not ollama_ok and not OPENAI_KEY and not ANTHROPIC_KEY:
+        print("No LLM available. Start Ollama or set OPENAI_API_KEY / ANTHROPIC_API_KEY\n")
+        print("""
 CAI pattern (works with any LLM):
 
 def constitutional_revision(request, principles):
@@ -206,33 +207,33 @@ def constitutional_revision(request, principles):
 # Tradeoff: adds N LLM calls per principle (expensive for long constitutions)
 # Production tip: run critique in parallel, only revise if needed
 """)
-    raise SystemExit(0)
+        raise SystemExit(0)
 
-# Run test cases
-for case in TEST_CASES[:2]:  # Limit to 2 for speed
-    print(f"{'─'*60}")
-    print(f"Test: {case['name']}")
-    print(f"Request: {case['request'][:80]}\n")
+    # Run test cases
+    for case in TEST_CASES[:2]:  # Limit to 2 for speed
+        print(f"{'─'*60}")
+        print(f"Test: {case['name']}")
+        print(f"Request: {case['request'][:80]}\n")
 
-    result = constitutional_revision(case["request"], case["principles"], verbose=True)
+        result = constitutional_revision(case["request"], case["principles"], verbose=True)
 
-    print(f"\nInitial response:")
-    print(f"  {result['initial'][:200]}...")
+        print(f"\nInitial response:")
+        print(f"  {result['initial'][:200]}...")
 
-    violations = [r for r in result["revisions"] if r["revised"]]
-    if violations:
-        print(f"\nViolations found ({len(violations)}):")
-        for v in violations:
-            print(f"  Principle: ...{v['principle'][-50:]}")
-            print(f"  Critique:  {v['critique'][:100]}")
-        print(f"\nFinal response (after revision):")
-        print(f"  {result['final'][:200]}...")
-    else:
-        print(f"\nNo violations found — response unchanged.")
-    print()
+        violations = [r for r in result["revisions"] if r["revised"]]
+        if violations:
+            print(f"\nViolations found ({len(violations)}):")
+            for v in violations:
+                print(f"  Principle: ...{v['principle'][-50:]}")
+                print(f"  Critique:  {v['critique'][:100]}")
+            print(f"\nFinal response (after revision):")
+            print(f"  {result['final'][:200]}...")
+        else:
+            print(f"\nNo violations found — response unchanged.")
+        print()
 
-print("─── Production notes ───")
-print("  Run critiques in parallel (asyncio.gather) to reduce latency")
-print("  Cache principle checks — same response rarely violates the same principle twice")
-print("  Start with 3-5 principles — each adds 1-2 LLM calls")
-print("  For high-volume: fine-tune a small classifier instead of LLM-as-judge")
+    print("─── Production notes ───")
+    print("  Run critiques in parallel (asyncio.gather) to reduce latency")
+    print("  Cache principle checks — same response rarely violates the same principle twice")
+    print("  Start with 3-5 principles — each adds 1-2 LLM calls")
+    print("  For high-volume: fine-tune a small classifier instead of LLM-as-judge")

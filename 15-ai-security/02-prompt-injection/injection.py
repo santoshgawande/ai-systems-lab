@@ -149,51 +149,52 @@ def safe_agent(user_input: str, context: str = "") -> str:
 
 # ─── Demo ────────────────────────────────────────────────────────────────────
 
-print("=== PROMPT INJECTION DEMO ===\n")
+if __name__ == "__main__":
+    print("=== PROMPT INJECTION DEMO ===\n")
 
-if not ollama_ok():
-    print("Ollama not running — showing injection patterns and defenses.\n")
-    print("Attack categories:")
-    for a in DIRECT_ATTACKS:
-        print(f"  [{a['name']}] {a['payload'][:80]!r}")
-    print("\nRegex patterns that catch common injections:")
-    for p in INJECTION_PATTERNS[:5]:
-        print(f"  {p.pattern}")
-    print("\nFor full demo: start Ollama (localhost:11434) and re-run.")
-else:
-    # Test direct attacks against defenses
-    print("─── Direct Injection Attacks ───\n")
-    for attack in DIRECT_ATTACKS:
-        regex_r = regex_guard(attack["payload"])
-        print(f"Attack: [{attack['name']}]")
-        print(f"  Payload: {attack['payload'][:80]!r}")
-        print(f"  Regex guard:  {'BLOCKED' if regex_r.blocked else 'PASSED'}"
-              + (f" — {regex_r.reason}" if regex_r.blocked else ""))
+    if not ollama_ok():
+        print("Ollama not running — showing injection patterns and defenses.\n")
+        print("Attack categories:")
+        for a in DIRECT_ATTACKS:
+            print(f"  [{a['name']}] {a['payload'][:80]!r}")
+        print("\nRegex patterns that catch common injections:")
+        for p in INJECTION_PATTERNS[:5]:
+            print(f"  {p.pattern}")
+        print("\nFor full demo: start Ollama (localhost:11434) and re-run.")
+    else:
+        # Test direct attacks against defenses
+        print("─── Direct Injection Attacks ───\n")
+        for attack in DIRECT_ATTACKS:
+            regex_r = regex_guard(attack["payload"])
+            print(f"Attack: [{attack['name']}]")
+            print(f"  Payload: {attack['payload'][:80]!r}")
+            print(f"  Regex guard:  {'BLOCKED' if regex_r.blocked else 'PASSED'}"
+                  + (f" — {regex_r.reason}" if regex_r.blocked else ""))
 
-        if not regex_r.blocked and ollama_ok():
-            llm_r = llm_guard(attack["payload"])
-            print(f"  LLM guard:    {'BLOCKED' if llm_r.blocked else 'PASSED'}"
-                  + (f" — {llm_r.reason[:60]}" if llm_r.reason else ""))
-        print()
+            if not regex_r.blocked and ollama_ok():
+                llm_r = llm_guard(attack["payload"])
+                print(f"  LLM guard:    {'BLOCKED' if llm_r.blocked else 'PASSED'}"
+                      + (f" — {llm_r.reason[:60]}" if llm_r.reason else ""))
+            print()
 
-    # Test indirect attacks
-    print("─── Indirect (Document) Injection Attacks ───\n")
-    for attack in INDIRECT_ATTACKS[:1]:
-        print(f"Attack: [{attack['name']}]")
-        print(f"  Doc: {attack['doc'][:100]!r}")
-        print(f"  Query: {attack['query']!r}")
-        response = safe_agent(attack["query"], context=attack["doc"])
-        print(f"  Safe agent response: {response[:200]}")
-        print()
+        # Test indirect attacks
+        print("─── Indirect (Document) Injection Attacks ───\n")
+        for attack in INDIRECT_ATTACKS[:1]:
+            print(f"Attack: [{attack['name']}]")
+            print(f"  Doc: {attack['doc'][:100]!r}")
+            print(f"  Query: {attack['query']!r}")
+            response = safe_agent(attack["query"], context=attack["doc"])
+            print(f"  Safe agent response: {response[:200]}")
+            print()
 
-    # Structural defense summary
-    print("─── Defense layers ───\n")
-    defenses = [
-        ("1. Role separation", "Use system/user roles — never f-string inject user data into system prompt"),
-        ("2. Regex fast-path", "Catch known patterns cheap (microseconds, no API call)"),
-        ("3. LLM guard", "Semantic detection for novel attacks (costs ~1 Haiku call per request)"),
-        ("4. Instruction scoping", "Tell model to ignore instructions in documents"),
-        ("5. Output validation", "Check response doesn't echo system prompt or inject HTML"),
-    ]
-    for name, desc in defenses:
-        print(f"  {name}: {desc}")
+        # Structural defense summary
+        print("─── Defense layers ───\n")
+        defenses = [
+            ("1. Role separation", "Use system/user roles — never f-string inject user data into system prompt"),
+            ("2. Regex fast-path", "Catch known patterns cheap (microseconds, no API call)"),
+            ("3. LLM guard", "Semantic detection for novel attacks (costs ~1 Haiku call per request)"),
+            ("4. Instruction scoping", "Tell model to ignore instructions in documents"),
+            ("5. Output validation", "Check response doesn't echo system prompt or inject HTML"),
+        ]
+        for name, desc in defenses:
+            print(f"  {name}: {desc}")

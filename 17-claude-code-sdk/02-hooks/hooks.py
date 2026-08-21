@@ -190,52 +190,53 @@ def settings_json(scripts_dir: str) -> dict:
 
 # ─── Generate scripts ─────────────────────────────────────────────────────────
 
-print("=== CLAUDE CODE HOOKS DEMO ===\n")
-print(f"Writing hook scripts to: {OUTPUT_DIR}\n")
+if __name__ == "__main__":
+    print("=== CLAUDE CODE HOOKS DEMO ===\n")
+    print(f"Writing hook scripts to: {OUTPUT_DIR}\n")
 
-for filename, content in SCRIPTS.items():
-    path = os.path.join(OUTPUT_DIR, filename)
-    with open(path, "w") as f:
-        f.write(content)
-    os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-    print(f"  Created: {filename}")
+    for filename, content in SCRIPTS.items():
+        path = os.path.join(OUTPUT_DIR, filename)
+        with open(path, "w") as f:
+            f.write(content)
+        os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+        print(f"  Created: {filename}")
 
-settings = settings_json(OUTPUT_DIR)
-settings_path = os.path.join(OUTPUT_DIR, "settings-with-hooks.json")
-with open(settings_path, "w") as f:
-    json.dump(settings, f, indent=2)
-print(f"  Created: settings-with-hooks.json\n")
+    settings = settings_json(OUTPUT_DIR)
+    settings_path = os.path.join(OUTPUT_DIR, "settings-with-hooks.json")
+    with open(settings_path, "w") as f:
+        json.dump(settings, f, indent=2)
+    print(f"  Created: settings-with-hooks.json\n")
 
-print("To activate these hooks:")
-print(f"  cp {settings_path} ~/.claude/settings.json")
-print(f"  # or merge the 'hooks' section into your existing settings.json\n")
+    print("To activate these hooks:")
+    print(f"  cp {settings_path} ~/.claude/settings.json")
+    print(f"  # or merge the 'hooks' section into your existing settings.json\n")
 
-print("─── Hook scripts summary ───\n")
-hooks_summary = [
-    ("bash-guard.sh",    "PreToolUse(Bash)",   "Blocks rm -rf, sudo, pipe-to-bash patterns"),
-    ("audit-log.sh",     "PreToolUse(*)",       "Logs every tool call to /tmp/claude-audit.log"),
-    ("write-format.sh",  "PostToolUse(Write)",  "Auto-runs black/prettier after file writes"),
-    ("git-stage.sh",     "PostToolUse(Write)",  "Auto-stages modified files with git add"),
-    ("test-runner.sh",   "PostToolUse(Write)",  "Runs pytest when Claude modifies test files"),
-    ("notify.sh",        "Notification",        "macOS notification when Claude needs input"),
-]
+    print("─── Hook scripts summary ───\n")
+    hooks_summary = [
+        ("bash-guard.sh",    "PreToolUse(Bash)",   "Blocks rm -rf, sudo, pipe-to-bash patterns"),
+        ("audit-log.sh",     "PreToolUse(*)",       "Logs every tool call to /tmp/claude-audit.log"),
+        ("write-format.sh",  "PostToolUse(Write)",  "Auto-runs black/prettier after file writes"),
+        ("git-stage.sh",     "PostToolUse(Write)",  "Auto-stages modified files with git add"),
+        ("test-runner.sh",   "PostToolUse(Write)",  "Runs pytest when Claude modifies test files"),
+        ("notify.sh",        "Notification",        "macOS notification when Claude needs input"),
+    ]
 
-for script, event, description in hooks_summary:
-    print(f"  {script:<22} [{event:<22}] {description}")
+    for script, event, description in hooks_summary:
+        print(f"  {script:<22} [{event:<22}] {description}")
 
-print()
-print("Environment variables available in hook scripts:")
-env_vars = [
-    ("$CLAUDE_TOOL_NAME",    "'Bash', 'Write', 'Edit', 'Read', ..."),
-    ("$CLAUDE_TOOL_INPUT",   "Full JSON input to the tool"),
-    ("$CLAUDE_FILE_PATH",    "File path (Write/Edit/Read only)"),
-    ("$CLAUDE_BASH_COMMAND", "Shell command string (Bash only)"),
-]
-for var, desc in env_vars:
-    print(f"  {var:<25} {desc}")
+    print()
+    print("Environment variables available in hook scripts:")
+    env_vars = [
+        ("$CLAUDE_TOOL_NAME",    "'Bash', 'Write', 'Edit', 'Read', ..."),
+        ("$CLAUDE_TOOL_INPUT",   "Full JSON input to the tool"),
+        ("$CLAUDE_FILE_PATH",    "File path (Write/Edit/Read only)"),
+        ("$CLAUDE_BASH_COMMAND", "Shell command string (Bash only)"),
+    ]
+    for var, desc in env_vars:
+        print(f"  {var:<25} {desc}")
 
-print()
-print("Exit codes:")
-print("  PreToolUse exit 2  → BLOCK the tool call (shows error to Claude)")
-print("  PreToolUse exit 0  → ALLOW the tool call")
-print("  PostToolUse exit * → Ignored (action already taken)")
+    print()
+    print("Exit codes:")
+    print("  PreToolUse exit 2  → BLOCK the tool call (shows error to Claude)")
+    print("  PreToolUse exit 0  → ALLOW the tool call")
+    print("  PostToolUse exit * → Ignored (action already taken)")

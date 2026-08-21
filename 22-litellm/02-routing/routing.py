@@ -185,11 +185,12 @@ def run_router_demo() -> None:
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
-print("=== LITELLM ROUTER DEMO ===\n")
+if __name__ == "__main__":
+    print("=== LITELLM ROUTER DEMO ===\n")
 
-if not LITELLM_AVAILABLE:
-    print("Install: pip install litellm")
-    raise SystemExit(0)
+    if not LITELLM_AVAILABLE:
+        print("Install: pip install litellm")
+        raise SystemExit(0)
 
-demo_concepts()
-run_router_demo()
+    demo_concepts()
+    run_router_demo()

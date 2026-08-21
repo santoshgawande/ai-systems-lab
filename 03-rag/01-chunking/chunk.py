@@ -59,18 +59,19 @@ def chunk_recursive(text: str, max_size: int = 300, overlap: int = 60) -> list[s
     return chunk_fixed(text, max_size, overlap)
 
 
-strategies = [
-    ("Fixed (size=200, overlap=40)",      chunk_fixed(SAMPLE_TEXT, 200, 40)),
-    ("Sentence (3 per chunk)",            chunk_sentence(SAMPLE_TEXT, 3)),
-    ("Paragraph",                          chunk_paragraph(SAMPLE_TEXT)),
-    ("Recursive (max=300, overlap=60)",   chunk_recursive(SAMPLE_TEXT, 300, 60)),
-]
+if __name__ == "__main__":
+    strategies = [
+        ("Fixed (size=200, overlap=40)",      chunk_fixed(SAMPLE_TEXT, 200, 40)),
+        ("Sentence (3 per chunk)",            chunk_sentence(SAMPLE_TEXT, 3)),
+        ("Paragraph",                          chunk_paragraph(SAMPLE_TEXT)),
+        ("Recursive (max=300, overlap=60)",   chunk_recursive(SAMPLE_TEXT, 300, 60)),
+    ]
 
-for name, chunks in strategies:
-    sizes = [len(c) for c in chunks]
-    print(f"Strategy: {name}")
-    print(f"  Chunks:   {len(chunks)}")
-    print(f"  Avg size: {sum(sizes) / len(sizes):.0f} chars")
-    print(f"  Min/Max:  {min(sizes)} / {max(sizes)} chars")
-    print(f"  Chunk 1:  {chunks[0][:100]!r}")
-    print()
+    for name, chunks in strategies:
+        sizes = [len(c) for c in chunks]
+        print(f"Strategy: {name}")
+        print(f"  Chunks:   {len(chunks)}")
+        print(f"  Avg size: {sum(sizes) / len(sizes):.0f} chars")
+        print(f"  Min/Max:  {min(sizes)} / {max(sizes)} chars")
+        print(f"  Chunk 1:  {chunks[0][:100]!r}")
+        print()

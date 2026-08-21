@@ -141,15 +141,16 @@ def run_suite(evals: list[Eval]) -> dict:
     return {"passed": passed, "failed": failed, "total": len(evals), "failures": failures}
 
 
-print(f"Running {len(EVALS)} evals against model: {MODEL}\n")
-summary = run_suite(EVALS)
+if __name__ == "__main__":
+    print(f"Running {len(EVALS)} evals against model: {MODEL}\n")
+    summary = run_suite(EVALS)
 
-print(f"\n{'='*50}")
-print(f"Results: {summary['passed']}/{summary['total']} passed")
-score = summary['passed'] / summary['total'] * 100
-print(f"Score:   {score:.0f}%")
+    print(f"\n{'='*50}")
+    print(f"Results: {summary['passed']}/{summary['total']} passed")
+    score = summary['passed'] / summary['total'] * 100
+    print(f"Score:   {score:.0f}%")
 
-if summary['failed'] > 0:
-    print(f"\n⚠  {summary['failed']} failing evals — fix the prompts or the model choice.")
-else:
-    print("\n✓ All evals passed.")
+    if summary['failed'] > 0:
+        print(f"\n⚠  {summary['failed']} failing evals — fix the prompts or the model choice.")
+    else:
+        print("\n✓ All evals passed.")

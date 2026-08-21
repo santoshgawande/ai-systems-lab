@@ -314,34 +314,35 @@ def print_report(results: list[EvalResult], ci_mode: bool = False) -> int:
 
 # ─── Entry point ─────────────────────────────────────────────────────────────
 
-parser = argparse.ArgumentParser(description="mini-eval-framework")
-parser.add_argument("--ci", action="store_true", help="Exit 1 if any eval fails (for CI)")
-parser.add_argument("--suite", help="Run only this suite (support|classifier|extraction|code)")
-parser.add_argument("--severity", help="Run only this severity level")
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="mini-eval-framework")
+    parser.add_argument("--ci", action="store_true", help="Exit 1 if any eval fails (for CI)")
+    parser.add_argument("--suite", help="Run only this suite (support|classifier|extraction|code)")
+    parser.add_argument("--severity", help="Run only this severity level")
+    args = parser.parse_args()
 
-print("=== MINI EVAL FRAMEWORK ===\n")
+    print("=== MINI EVAL FRAMEWORK ===\n")
 
-# Check Ollama
-try:
-    httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
-except Exception:
-    print(f"Ollama not running at {OLLAMA_BASE}. Start: ollama serve")
-    sys.exit(1 if args.ci else 0)
+    # Check Ollama
+    try:
+        httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
+    except Exception:
+        print(f"Ollama not running at {OLLAMA_BASE}. Start: ollama serve")
+        sys.exit(1 if args.ci else 0)
 
-# Filter evals
-to_run = EVALS
-if args.suite:
-    to_run = [e for e in to_run if e.suite == args.suite]
-if args.severity:
-    to_run = [e for e in to_run if e.severity == args.severity]
+    # Filter evals
+    to_run = EVALS
+    if args.suite:
+        to_run = [e for e in to_run if e.suite == args.suite]
+    if args.severity:
+        to_run = [e for e in to_run if e.severity == args.severity]
 
-if not to_run:
-    print(f"No evals matched filters. Available suites: {sorted(set(e.suite for e in EVALS))}")
-    sys.exit(0)
+    if not to_run:
+        print(f"No evals matched filters. Available suites: {sorted(set(e.suite for e in EVALS))}")
+        sys.exit(0)
 
-print(f"Running {len(to_run)} evals | model={MAIN_MODEL} | judge={JUDGE_MODEL}\n")
+    print(f"Running {len(to_run)} evals | model={MAIN_MODEL} | judge={JUDGE_MODEL}\n")
 
-results = run_evals(to_run)
-exit_code = print_report(results, ci_mode=args.ci)
-sys.exit(exit_code)
+    results = run_evals(to_run)
+    exit_code = print_report(results, ci_mode=args.ci)
+    sys.exit(exit_code)

@@ -120,23 +120,27 @@ def chunk_text(text: str, chunk_size: int = 400, overlap: int = 80) -> list[dict
         end = min(start + chunk_size, len(text))
         chunk = text[start:end]
         # Try to end on sentence boundary
-        last_period = chunk.rfind(". ")
-        if last_period > chunk_size // 2:
-            end = start + last_period + 1
-            chunk = text[start:end]
+        if end < len(text):
+            last_period = chunk.rfind(". ")
+            if last_period > chunk_size // 2:
+                end = start + last_period + 1
+                chunk = text[start:end]
         chunks.append({"chunk_id": idx, "text": chunk, "start": start, "end": end})
         idx += 1
-        start = end - overlap
+        if end >= len(text):
+            break
+        start = max(start + 1, end - overlap)
     return chunks
 
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== PDF EXTRACTION DEMO ===\n")
+if __name__ == "__main__":
+    print("=== PDF EXTRACTION DEMO ===\n")
 
-if not PDFPLUMBER_AVAILABLE:
-    print("pdfplumber not installed. pip install pdfplumber\n")
-    print("""
+    if not PDFPLUMBER_AVAILABLE:
+        print("pdfplumber not installed. pip install pdfplumber\n")
+        print("""
 Key API:
 
 import pdfplumber
@@ -157,44 +161,44 @@ with pdfplumber.open("document.pdf") as pdf:
 cropped = page.crop((0, 50, page.width, page.height - 50))
 text = cropped.extract_text()
 """)
-    raise SystemExit(0)
+        raise SystemExit(0)
 
-# Generate or load PDF
-PDF_PATH = os.environ.get("PDF_PATH", "")
+    # Generate or load PDF
+    PDF_PATH = os.environ.get("PDF_PATH", "")
 
-if PDF_PATH and os.path.exists(PDF_PATH):
-    with open(PDF_PATH, "rb") as f:
-        pdf_bytes = f.read()
-    print(f"Loaded: {PDF_PATH} ({len(pdf_bytes):,} bytes)")
-elif REPORTLAB_AVAILABLE:
-    pdf_bytes = make_sample_pdf()
-    print(f"Generated sample PDF ({len(pdf_bytes):,} bytes, {len(SAMPLE_CONTENT)} pages)")
-else:
-    print("No PDF found. Set PDF_PATH env var, or: pip install reportlab")
-    print("Continuing with API demo only...")
-    pdf_bytes = b""
+    if PDF_PATH and os.path.exists(PDF_PATH):
+        with open(PDF_PATH, "rb") as f:
+            pdf_bytes = f.read()
+        print(f"Loaded: {PDF_PATH} ({len(pdf_bytes):,} bytes)")
+    elif REPORTLAB_AVAILABLE:
+        pdf_bytes = make_sample_pdf()
+        print(f"Generated sample PDF ({len(pdf_bytes):,} bytes, {len(SAMPLE_CONTENT)} pages)")
+    else:
+        print("No PDF found. Set PDF_PATH env var, or: pip install reportlab")
+        print("Continuing with API demo only...")
+        pdf_bytes = b""
 
-if pdf_bytes:
-    # Extract pages
-    pages = extract_pages(pdf_bytes)
-    print(f"\nExtracted {len(pages)} pages:\n")
-    for p in pages:
-        print(f"  Page {p['page']}: {p['chars']} chars")
-        preview = p["text"][:120].replace("\n", " ")
-        print(f"    Preview: {preview}...")
+    if pdf_bytes:
+        # Extract pages
+        pages = extract_pages(pdf_bytes)
+        print(f"\nExtracted {len(pages)} pages:\n")
+        for p in pages:
+            print(f"  Page {p['page']}: {p['chars']} chars")
+            preview = p["text"][:120].replace("\n", " ")
+            print(f"    Preview: {preview}...")
 
-    # Chunk for RAG
-    all_text = " ".join(p["text"] for p in pages)
-    chunks = chunk_text(all_text, chunk_size=400, overlap=80)
-    print(f"\nChunking (size=400, overlap=80): {len(chunks)} chunks\n")
-    for c in chunks[:3]:
-        print(f"  Chunk {c['chunk_id']}: chars {c['start']}-{c['end']}")
-        print(f"    {c['text'][:100]}...")
-        print()
+        # Chunk for RAG
+        all_text = " ".join(p["text"] for p in pages)
+        chunks = chunk_text(all_text, chunk_size=400, overlap=80)
+        print(f"\nChunking (size=400, overlap=80): {len(chunks)} chunks\n")
+        for c in chunks[:3]:
+            print(f"  Chunk {c['chunk_id']}: chars {c['start']}-{c['end']}")
+            print(f"    {c['text'][:100]}...")
+            print()
 
-    print("RAG pipeline pattern:")
-    print("  1. extract_pages() → page text with metadata")
-    print("  2. chunk_text()    → overlapping chunks")
-    print("  3. embed each chunk (Ollama / OpenAI)")
-    print("  4. store in vector DB (Qdrant / pgvector)")
-    print("  5. query → top-k chunks → LLM context")
+        print("RAG pipeline pattern:")
+        print("  1. extract_pages() → page text with metadata")
+        print("  2. chunk_text()    → overlapping chunks")
+        print("  3. embed each chunk (Ollama / OpenAI)")
+        print("  4. store in vector DB (Qdrant / pgvector)")
+        print("  5. query → top-k chunks → LLM context")

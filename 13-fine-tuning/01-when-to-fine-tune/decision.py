@@ -184,25 +184,26 @@ def dataset_guide():
 
 # ─── Entry point ─────────────────────────────────────────────────────────────
 
-print("This tool helps you decide whether to fine-tune, prompt, or use RAG.\n")
-print("Running in demonstration mode (not interactive).\n")
+if __name__ == "__main__":
+    print("This tool helps you decide whether to fine-tune, prompt, or use RAG.\n")
+    print("Running in demonstration mode (not interactive).\n")
 
-# Show the full decision tree without prompting
-print("=== DECISION QUESTIONS (answer these for your task) ===\n")
-for i, q in enumerate(QUESTIONS, 1):
-    print(f"  {i}. {q['question']}")
-    print(f"     YES → {q['yes']}")
-    print(f"     NO  → {q['no']}")
-    print()
+    # Show the full decision tree without prompting
+    print("=== DECISION QUESTIONS (answer these for your task) ===\n")
+    for i, q in enumerate(QUESTIONS, 1):
+        print(f"  {i}. {q['question']}")
+        print(f"     YES → {q['yes']}")
+        print(f"     NO  → {q['no']}")
+        print()
 
-print("=== DECISIONS ===\n")
-for key, d in DECISIONS.items():
-    print(f"  {key}: {d['label']}")
-    print(f"    {d['rationale']}")
-    print()
+    print("=== DECISIONS ===\n")
+    for key, d in DECISIONS.items():
+        print(f"  {key}: {d['label']}")
+        print(f"    {d['rationale']}")
+        print()
 
-cost_analysis()
-dataset_guide()
+    cost_analysis()
+    dataset_guide()
 
 print("\n─── To run interactively: uncomment run_decision_tree() below ───")
 # run_decision_tree()

@@ -90,38 +90,39 @@ SCHEMA = """{
   "price_mentioned": true | false
 }"""
 
-# ─── Strategy 1: Vague instruction ────────────────────────────────────────────
-VAGUE = "Extract product info from the review as JSON."
+if __name__ == "__main__":
+    # ─── Strategy 1: Vague instruction ────────────────────────────────────────────
+    VAGUE = "Extract product info from the review as JSON."
 
-print("=== STRATEGY 1: Vague instruction ===\n")
-for review in REVIEWS[:2]:
-    result = ask(VAGUE, review)
-    parsed = extract_json(result)
-    icon = "✓" if parsed else "✗"
-    print(f"  {icon} Raw: {result[:100]!r}")
-    print()
+    print("=== STRATEGY 1: Vague instruction ===\n")
+    for review in REVIEWS[:2]:
+        result = ask(VAGUE, review)
+        parsed = extract_json(result)
+        icon = "✓" if parsed else "✗"
+        print(f"  {icon} Raw: {result[:100]!r}")
+        print()
 
-# ─── Strategy 2: Precise schema ───────────────────────────────────────────────
-PRECISE = f"""Extract product information from the review.
+    # ─── Strategy 2: Precise schema ───────────────────────────────────────────────
+    PRECISE = f"""Extract product information from the review.
 Respond ONLY with valid JSON matching this schema — no other text, no markdown:
 
 {SCHEMA}"""
 
-print("=== STRATEGY 2: Precise schema ===\n")
-for review in REVIEWS:
-    result = ask(PRECISE, review)
-    parsed = extract_json(result)
-    icon = "✓" if parsed else "✗"
-    if parsed:
-        print(f"  {icon} sentiment={parsed.get('sentiment')!r}  rating={parsed.get('rating')}  price={parsed.get('price_mentioned')}")
-    else:
-        print(f"  {icon} Parse failed: {result[:80]!r}")
+    print("=== STRATEGY 2: Precise schema ===\n")
+    for review in REVIEWS:
+        result = ask(PRECISE, review)
+        parsed = extract_json(result)
+        icon = "✓" if parsed else "✗"
+        if parsed:
+            print(f"  {icon} sentiment={parsed.get('sentiment')!r}  rating={parsed.get('rating')}  price={parsed.get('price_mentioned')}")
+        else:
+            print(f"  {icon} Parse failed: {result[:80]!r}")
 
-# ─── Strategy 3: Schema + retry on parse failure ──────────────────────────────
-print("\n=== STRATEGY 3: Schema + auto-retry ===\n")
-for review in REVIEWS:
-    parsed = ask_json(PRECISE, review, required_keys=["product", "sentiment", "rating"])
-    if parsed:
-        print(f"  ✓ {parsed.get('product')!r}  {parsed.get('sentiment')}  {parsed.get('rating')}/5")
-    else:
-        print(f"  ✗ Failed after retries")
+    # ─── Strategy 3: Schema + retry on parse failure ──────────────────────────────
+    print("\n=== STRATEGY 3: Schema + auto-retry ===\n")
+    for review in REVIEWS:
+        parsed = ask_json(PRECISE, review, required_keys=["product", "sentiment", "rating"])
+        if parsed:
+            print(f"  ✓ {parsed.get('product')!r}  {parsed.get('sentiment')}  {parsed.get('rating')}/5")
+        else:
+            print(f"  ✗ Failed after retries")
