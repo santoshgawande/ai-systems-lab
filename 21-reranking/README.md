@@ -17,6 +17,7 @@ First-stage retrieval gives you the top-50. Reranking finds the actual top-5.
 | 02-mmr | MMR algorithm, diversity vs relevance trade-off |
 | 03-cohere-rerank | Cloud cross-encoder API, batch reranking, fallback strategies |
 | 04-reciprocal-rank-fusion | Reciprocal Rank Fusion (RRF), multi-retriever hybrid consensus |
+| 05-colbert-late-interaction | ColBERT token-level multi-vector late interaction (MaxSim) |
 
 ## Setup
 
