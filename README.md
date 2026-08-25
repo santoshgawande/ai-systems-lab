@@ -33,14 +33,15 @@ ai-systems-lab/
 ├── 19-instructor/               # Pydantic + LLMs, retry validation (2 labs)
 ├── 20-audio-tts/                # Whisper STT, OpenAI TTS (2 labs)
 │
-├── 21-reranking/                # cross-encoder reranking, MMR diversity (2 labs)
+├── 21-reranking/                # cross-encoder reranking, MMR diversity, Cohere API, RRF, ColBERT MaxSim (5 labs)
 ├── 22-litellm/                  # unified LLM API, router with fallbacks (2 labs)
 ├── 23-document-parsing/         # PDF text extraction, table extraction (2 labs)
 ├── 24-constitutional-ai/        # self-critique loop, OpenAI moderation API (2 labs)
 ├── 25-huggingface/              # transformers pipeline, model quantisation (2 labs)
 ├── 26-multi-agent-patterns/     # orchestrator-subagent, agent-as-tool (2 labs)
 ├── 27-context-management/       # sliding window, summarisation, human-in-the-loop (3 labs)
-└── 28-autonomous-runner/        # overnight task queue runner — uses Claude Code quota while you sleep
+├── 28-autonomous-runner/        # overnight task queue runner — uses Claude Code quota while you sleep
+└── 29-graph-rag/                # Microsoft GraphRAG, knowledge graph extraction, hierarchical community search (2 labs)
 ```
 
 ## How to use
