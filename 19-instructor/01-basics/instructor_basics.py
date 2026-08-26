@@ -1,10 +1,11 @@
+from __future__ import annotations
 """
 Instructor basics: extract typed Pydantic objects from LLM responses.
 Shows single extraction, nested models, lists, and optional fields.
 Requires: instructor, anthropic (or openai), pydantic
 """
 import os
-from typing import Literal
+from typing import Literal, Optional, List
 
 API_KEY_ANTHROPIC = os.environ.get("ANTHROPIC_API_KEY")
 API_KEY_OPENAI = os.environ.get("OPENAI_API_KEY")
@@ -39,49 +40,49 @@ except ImportError:
 if PYDANTIC_OK:
     class ContactInfo(BaseModel):
         name: str
-        email: str | None = None
-        phone: str | None = None
-        company: str | None = None
-        role: str | None = None
+        email: Optional[str] = None
+        phone: Optional[str] = None
+        company: Optional[str] = None
+        role: Optional[str] = None
 
     class TaskItem(BaseModel):
         title: str
         priority: Literal["high", "medium", "low"]
-        assignee: str | None = None
-        due: str | None = None
+        assignee: Optional[str] = None
+        due: Optional[str] = None
 
     class MeetingNotes(BaseModel):
         title: str
-        date: str | None = None
-        attendees: list[str]
-        decisions: list[str]
-        action_items: list[TaskItem]
-        next_meeting: str | None = None
+        date: Optional[str] = None
+        attendees: List[str]
+        decisions: List[str]
+        action_items: List[TaskItem]
+        next_meeting: Optional[str] = None
 
     class SentimentAnalysis(BaseModel):
-        sentiment: Literal["positive", "negative", "neutral", "mixed"]
-        score: float = Field(ge=1.0, le=10.0, description="Sentiment score 1-10")
-        key_phrases: list[str]
+        sentiment: Literal["positive", "neutral", "negative"]
+        score: int = Field(description="1-10 score, where 10 is most positive")
+        key_phrases: List[str]
         summary: str
 
-    class ResumeData(BaseModel):
+    class CandidateProfile(BaseModel):
         name: str
-        email: str | None = None
-        years_experience: int | None = None
-        skills: list[str]
-        current_role: str | None = None
-        education: str | None = None
+        years_experience: Optional[int] = None
+        skills: List[str]
+        current_role: Optional[str] = None
+        education: Optional[str] = None
 
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== INSTRUCTOR BASICS DEMO ===\n")
+if __name__ == "__main__":
+    print("=== INSTRUCTOR BASICS DEMO ===\n")
 
-if not PYDANTIC_OK:
-    print("Install pydantic to continue: pip install pydantic")
-elif not LIVE:
-    print("Instructor API shape:\n")
-    print("""
+    if not PYDANTIC_OK:
+        print("Install pydantic to continue: pip install pydantic")
+    elif not LIVE:
+        print("Instructor API shape:\n")
+        print("""
 import instructor
 from anthropic import Anthropic
 from pydantic import BaseModel
@@ -111,61 +112,62 @@ user = client.chat.completions.create(
     response_model=User,
 )
 """)
-    print("Supported providers: Anthropic, OpenAI, Gemini, Cohere, Mistral, Ollama")
-else:
-    def extract(text: str, model_class, label: str) -> object:
-        return client.messages.create(
-            model=MODEL,
-            max_tokens=512,
-            messages=[{"role": "user", "content": text}],
-            response_model=model_class,
-        ) if PROVIDER == "anthropic" else client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": text}],
-            response_model=model_class,
-        )
+        print("Supported providers: Anthropic, OpenAI, Gemini, Cohere, Mistral, Ollama")
+    else:
+        def extract(text: str, model_class, label: str) -> object:
+            return client.messages.create(
+                model=MODEL,
+                max_tokens=512,
+                messages=[{"role": "user", "content": text}],
+                response_model=model_class,
+            ) if PROVIDER == "anthropic" else client.chat.completions.create(
+                model=MODEL,
+                max_tokens=512,
+                messages=[{"role": "user", "content": text}],
+                response_model=model_class,
+            )
 
-    # Demo 1: Contact extraction
-    print("─── Contact extraction ───\n")
-    texts = [
-        "Hi, I'm Dr. Sarah Chen, Head of AI at DeepMind. Reach me at sarah@deepmind.ai or +1-650-555-0142.",
-        "Bob from sales here. My email is bob.jones@company.com",
-        "Prof. Martinez — no email please, just call the department.",
-    ]
-    for text in texts:
-        result = extract(text, ContactInfo, "ContactInfo")
-        print(f"  Input: {text[:60]!r}")
-        print(f"  → {result.model_dump(exclude_none=True)}\n")
+        # Demo 1: Contact extraction
+        print("─── Contact extraction ───\n")
+        texts = [
+            "Hi, I'm Dr. Sarah Chen, Head of AI at DeepMind. Reach me at sarah@deepmind.ai or +1-650-555-0142.",
+            "Bob from sales here. My email is bob.jones@company.com",
+            "Prof. Martinez — no email please, just call the department.",
+        ]
+        for text in texts:
+            result = extract(text, ContactInfo, "ContactInfo")
+            print(f"  Input: {text[:60]!r}")
+            print(f"  → {result.model_dump(exclude_none=True)}\n")
 
-    # Demo 2: Sentiment analysis with score
-    print("─── Sentiment analysis ───\n")
-    reviews = [
-        "Best software I've ever used. Saves me 2 hours daily. The UI is intuitive and the support team is incredible.",
-        "Crashes every 30 minutes. Lost my work 3 times this week. Absolute garbage.",
-    ]
-    for review in reviews:
-        result = extract(review, SentimentAnalysis, "SentimentAnalysis")
-        print(f"  {review[:60]!r}")
-        print(f"  → sentiment={result.sentiment} score={result.score}/10")
-        print(f"  → phrases={result.key_phrases}")
-        print(f"  → {result.summary}\n")
+        # Demo 2: Sentiment analysis with score
+        print("─── Sentiment analysis ───\n")
+        reviews = [
+            "Best software I've ever used. Saves me 2 hours daily. The UI is intuitive and the support team is incredible.",
+            "Crashes every 30 minutes. Lost my work 3 times this week. Absolute garbage.",
+        ]
+        for review in reviews:
+            result = extract(review, SentimentAnalysis, "SentimentAnalysis")
+            print(f"  {review[:60]!r}")
+            print(f"  → sentiment={result.sentiment} score={result.score}/10")
+            print(f"  → phrases={result.key_phrases}")
+            print(f"  → {result.summary}\n")
 
-    # Demo 3: Meeting notes with nested structure
-    print("─── Meeting notes with nested action items ───\n")
-    notes = """
-    Sprint review meeting on Thursday.
-    Attendees: Alice (PM), Bob (eng), Carol (design).
-    We decided to launch the feature next Monday.
-    Action items: Alice will write the release notes by Friday,
-    Bob needs to fix the critical login bug ASAP (high priority),
-    Carol to update the design system documentation (low priority).
-    Next meeting: Monday 10am.
-    """
-    result = extract(notes, MeetingNotes, "MeetingNotes")
-    print(f"  Meeting: {result.title}")
-    print(f"  Attendees: {result.attendees}")
-    print(f"  Decisions: {result.decisions}")
-    print(f"  Action items:")
-    for item in result.action_items:
-        print(f"    [{item.priority.upper()}] {item.title} → {item.assignee} (due: {item.due})")
-    print(f"  Next meeting: {result.next_meeting}\n")
+        # Demo 3: Meeting notes with nested structure
+        print("─── Meeting notes with nested action items ───\n")
+        notes = """
+        Sprint review meeting on Thursday.
+        Attendees: Alice (PM), Bob (eng), Carol (design).
+        We decided to launch the feature next Monday.
+        Action items: Alice will write the release notes by Friday,
+        Bob needs to fix the critical login bug ASAP (high priority),
+        Carol to update the design system documentation (low priority).
+        Next meeting: Monday 10am.
+        """
+        result = extract(notes, MeetingNotes, "MeetingNotes")
+        print(f"  Meeting: {result.title}")
+        print(f"  Attendees: {result.attendees}")
+        print(f"  Decisions: {result.decisions}")
+        print(f"  Action items:")
+        for item in result.action_items:
+            print(f"    [{item.priority.upper()}] {item.title} → {item.assignee} (due: {item.due})")
+        print(f"  Next meeting: {result.next_meeting}\n")

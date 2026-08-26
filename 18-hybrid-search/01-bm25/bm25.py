@@ -82,55 +82,56 @@ class SimpleBM25:
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== BM25 FULL-TEXT SEARCH DEMO ===\n")
+if __name__ == "__main__":
+    print("=== BM25 FULL-TEXT SEARCH DEMO ===\n")
 
-texts = [get_text(d) for d in DOCS]
+    texts = [get_text(d) for d in DOCS]
 
-# Manual BM25 (no library)
-bm25_manual = SimpleBM25(texts)
+    # Manual BM25 (no library)
+    bm25_manual = SimpleBM25(texts)
 
-queries_semantic = [
-    "how to speed up database queries",
-    "running multiple tasks at the same time",
-    "distributing traffic across multiple servers",
-]
+    queries_semantic = [
+        "how to speed up database queries",
+        "running multiple tasks at the same time",
+        "distributing traffic across multiple servers",
+    ]
 
-queries_exact = [
-    "CustomerNotFoundException",          # exact class name — BM25 wins
-    "QDRANT_API_KEY",                     # exact env var — BM25 wins
-    "CREATE EXTENSION vector",            # exact SQL — BM25 wins
-    "EXPLAIN ANALYZE",                    # exact command
-]
+    queries_exact = [
+        "CustomerNotFoundException",          # exact class name — BM25 wins
+        "QDRANT_API_KEY",                     # exact env var — BM25 wins
+        "CREATE EXTENSION vector",            # exact SQL — BM25 wins
+        "EXPLAIN ANALYZE",                    # exact command
+    ]
 
-print("─── Semantic queries (BM25 still works, vector search shines) ───\n")
-for query in queries_semantic:
-    results = bm25_manual.search(query, top_k=3)
-    print(f"  Q: {query!r}")
-    for rank, (idx, score) in enumerate(results, 1):
-        print(f"    {rank}. score={score:.3f}  {DOCS[idx]['title']}")
-    print()
-
-print("─── Exact / identifier queries (BM25 wins vs vector search) ───\n")
-for query in queries_exact:
-    results = bm25_manual.search(query, top_k=3)
-    print(f"  Q: {query!r}")
-    for rank, (idx, score) in enumerate(results, 1):
-        print(f"    {rank}. score={score:.3f}  {DOCS[idx]['title']}")
-    print()
-
-if BM25_AVAILABLE:
-    print("─── rank-bm25 library comparison ───\n")
-    tokenized_corpus = [tokenize(t) for t in texts]
-    bm25_lib = BM25Okapi(tokenized_corpus, k1=1.5, b=0.75)
-
-    for query in queries_exact[:2]:
-        tokens = tokenize(query)
-        scores = bm25_lib.get_scores(tokens)
-        top = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:3]
+    print("─── Semantic queries (BM25 still works, vector search shines) ───\n")
+    for query in queries_semantic:
+        results = bm25_manual.search(query, top_k=3)
         print(f"  Q: {query!r}")
-        for rank, (idx, score) in enumerate(top, 1):
+        for rank, (idx, score) in enumerate(results, 1):
             print(f"    {rank}. score={score:.3f}  {DOCS[idx]['title']}")
         print()
 
-print("Key insight: BM25 is deterministic, fast, and requires no embeddings.")
-print("Use it as the first retrieval stage, then re-rank with vector similarity.")
+    print("─── Exact / identifier queries (BM25 wins vs vector search) ───\n")
+    for query in queries_exact:
+        results = bm25_manual.search(query, top_k=3)
+        print(f"  Q: {query!r}")
+        for rank, (idx, score) in enumerate(results, 1):
+            print(f"    {rank}. score={score:.3f}  {DOCS[idx]['title']}")
+        print()
+
+    if BM25_AVAILABLE:
+        print("─── rank-bm25 library comparison ───\n")
+        tokenized_corpus = [tokenize(t) for t in texts]
+        bm25_lib = BM25Okapi(tokenized_corpus, k1=1.5, b=0.75)
+
+        for query in queries_exact[:2]:
+            tokens = tokenize(query)
+            scores = bm25_lib.get_scores(tokens)
+            top = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:3]
+            print(f"  Q: {query!r}")
+            for rank, (idx, score) in enumerate(top, 1):
+                print(f"    {rank}. score={score:.3f}  {DOCS[idx]['title']}")
+            print()
+
+    print("Key insight: BM25 is deterministic, fast, and requires no embeddings.")
+    print("Use it as the first retrieval stage, then re-rank with vector similarity.")

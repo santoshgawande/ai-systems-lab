@@ -73,11 +73,12 @@ TASKS = [
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== HUGGINGFACE TRANSFORMERS PIPELINE DEMO ===\n")
+if __name__ == "__main__":
+    print("=== HUGGINGFACE TRANSFORMERS PIPELINE DEMO ===\n")
 
-if not HF_AVAILABLE:
-    print("transformers not installed. pip install transformers torch\n")
-    print("""
+    if not HF_AVAILABLE:
+        print("transformers not installed. pip install transformers torch\n")
+        print("""
 The pipeline() API — one-liner inference:
 
 from transformers import pipeline
@@ -113,80 +114,80 @@ pipeline("sentiment-analysis", device=0)         # GPU 0 (CUDA)
 pipeline("sentiment-analysis", device="mps")     # Apple Silicon GPU
 pipeline("sentiment-analysis", device=-1)        # CPU (default)
 """)
-    raise SystemExit(0)
+        raise SystemExit(0)
 
-# Detect best device
-import torch
-if torch.backends.mps.is_available():
-    DEVICE = "mps"
-elif torch.cuda.is_available():
-    DEVICE = 0  # first GPU
-else:
-    DEVICE = -1  # CPU
-print(f"Device: {DEVICE}\n")
+    # Detect best device
+    import torch
+    if torch.backends.mps.is_available():
+        DEVICE = "mps"
+    elif torch.cuda.is_available():
+        DEVICE = 0  # first GPU
+    else:
+        DEVICE = -1  # CPU
+    print(f"Device: {DEVICE}\n")
 
-# Run tasks
-QUICK_MODE = "--quick" in sys.argv or len(sys.argv) > 1
+    # Run tasks
+    QUICK_MODE = "--quick" in sys.argv or len(sys.argv) > 1
 
-# In quick mode, only run the smallest models
-tasks_to_run = TASKS[:2] if QUICK_MODE else TASKS
+    # In quick mode, only run the smallest models
+    tasks_to_run = TASKS[:2] if QUICK_MODE else TASKS
 
-for task_def in tasks_to_run:
-    print(f"{'─'*60}")
-    print(f"Task: {task_def['name']}  (model: {task_def['model']})")
-    print("Loading model...")
+    for task_def in tasks_to_run:
+        print(f"{'─'*60}")
+        print(f"Task: {task_def['name']}  (model: {task_def['model']})")
+        print("Loading model...")
 
-    try:
-        kwargs = task_def.get("kwargs", {})
-        pipe = pipeline(task_def["task"], model=task_def["model"], device=DEVICE)
+        try:
+            kwargs = task_def.get("kwargs", {})
+            pipe = pipeline(task_def["task"], model=task_def["model"], device=DEVICE)
 
-        start = time.perf_counter()
+            start = time.perf_counter()
 
-        if task_def["task"] == "question-answering":
-            for pair in task_def["qa_pairs"]:
-                result = pipe(question=pair["question"], context=pair["context"])
-                print(f"  Q: {pair['question']}")
-                print(f"  A: {result['answer']}  (score={result['score']:.3f})")
-        else:
-            for inp in task_def["inputs"]:
-                result = pipe(inp, **kwargs)
-                print(f"  Input: {inp[:70]}")
-                if isinstance(result, list):
-                    for item in result[:3]:
-                        if isinstance(item, dict):
-                            # NER, classification
-                            label = item.get("entity_group") or item.get("label") or item.get("labels", [None])[0]
-                            score = item.get("score", item.get("scores", [None])[0])
-                            word = item.get("word", "")
-                            print(f"    → {label}  {f'({word})' if word else ''}  score={score:.3f}")
-                        elif isinstance(item, str):
-                            print(f"    → {item[:100]}")
-                else:
-                    # Summarisation returns dict directly
-                    if "summary_text" in result:
-                        print(f"  Summary: {result['summary_text']}")
-                print()
+            if task_def["task"] == "question-answering":
+                for pair in task_def["qa_pairs"]:
+                    result = pipe(question=pair["question"], context=pair["context"])
+                    print(f"  Q: {pair['question']}")
+                    print(f"  A: {result['answer']}  (score={result['score']:.3f})")
+            else:
+                for inp in task_def["inputs"]:
+                    result = pipe(inp, **kwargs)
+                    print(f"  Input: {inp[:70]}")
+                    if isinstance(result, list):
+                        for item in result[:3]:
+                            if isinstance(item, dict):
+                                # NER, classification
+                                label = item.get("entity_group") or item.get("label") or item.get("labels", [None])[0]
+                                score = item.get("score", item.get("scores", [None])[0])
+                                word = item.get("word", "")
+                                print(f"    → {label}  {f'({word})' if word else ''}  score={score:.3f}")
+                            elif isinstance(item, str):
+                                print(f"    → {item[:100]}")
+                    else:
+                        # Summarisation returns dict directly
+                        if "summary_text" in result:
+                            print(f"  Summary: {result['summary_text']}")
+                    print()
 
-        elapsed = time.perf_counter() - start
-        print(f"  Inference time: {elapsed*1000:.0f}ms")
+            elapsed = time.perf_counter() - start
+            print(f"  Inference time: {elapsed*1000:.0f}ms")
 
-    except Exception as e:
-        print(f"  Error: {e}")
-        print("  (Model may need to download on first run — be patient)")
-    print()
+        except Exception as e:
+            print(f"  Error: {e}")
+            print("  (Model may need to download on first run — be patient)")
+        print()
 
-print("─── Pipeline task reference ───")
-tasks_ref = [
-    ("text-generation",         "GPT-style text completion"),
-    ("sentiment-analysis",      "Positive/negative classification"),
-    ("ner",                     "Named entity recognition"),
-    ("zero-shot-classification","Classify without labelled training data"),
-    ("summarization",           "Abstractive text summarisation"),
-    ("question-answering",      "Extractive QA from context"),
-    ("translation_en_to_fr",    "Machine translation"),
-    ("fill-mask",               "BERT-style masked token prediction"),
-    ("image-classification",    "Vision: classify an image"),
-    ("automatic-speech-recognition", "Whisper-style STT"),
-]
-for task, desc in tasks_ref:
-    print(f"  {task:<40} {desc}")
+    print("─── Pipeline task reference ───")
+    tasks_ref = [
+        ("text-generation",         "GPT-style text completion"),
+        ("sentiment-analysis",      "Positive/negative classification"),
+        ("ner",                     "Named entity recognition"),
+        ("zero-shot-classification","Classify without labelled training data"),
+        ("summarization",           "Abstractive text summarisation"),
+        ("question-answering",      "Extractive QA from context"),
+        ("translation_en_to_fr",    "Machine translation"),
+        ("fill-mask",               "BERT-style masked token prediction"),
+        ("image-classification",    "Vision: classify an image"),
+        ("automatic-speech-recognition", "Whisper-style STT"),
+    ]
+    for task, desc in tasks_ref:
+        print(f"  {task:<40} {desc}")

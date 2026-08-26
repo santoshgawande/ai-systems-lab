@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Async queue pattern for high-volume LLM workloads.
 Demonstrates semaphore concurrency control, priority queue, retry with backoff.
@@ -215,4 +216,5 @@ async with semaphore:
     print(f"  Throughput:{len(completed)/elapsed:.1f} req/s  (with {MAX_CONCURRENT} workers)")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -187,11 +187,12 @@ def chat_with_tools(user_message: str, verbose: bool = True) -> str:
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== OPENAI FUNCTION CALLING DEMO ===\n")
+if __name__ == "__main__":
+    print("=== OPENAI FUNCTION CALLING DEMO ===\n")
 
-if not LIVE:
-    print("Function calling API shape:\n")
-    print("""
+    if not LIVE:
+        print("Function calling API shape:\n")
+        print("""
 # 1. Single tool call
 response = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -224,18 +225,18 @@ if response.choices[0].finish_reason == "tool_calls":
 # → model returns tool_calls = [get_weather(Tokyo), get_weather(Paris)]
 # → execute both, append two tool messages, continue
 """)
-    print("Key points:")
-    print("  - finish_reason='tool_calls' means model wants tools (not 'stop')")
-    print("  - Parallel calls: multiple items in tool_calls[] array")
-    print("  - tool_call_id must match when returning results")
-    print("  - tool_choice='required' forces at least one tool call")
-else:
-    DEMO_QUERIES = [
-        "What is sqrt(256) + 2**8?",
-        "What's the weather in Tokyo and Paris right now?",
-        "Convert 100 km to miles and 70 kg to lbs.",
-        "What time is it, and what's 15% of 847?",
-    ]
-    for query in DEMO_QUERIES:
-        print("-" * 60)
-        chat_with_tools(query)
+        print("Key points:")
+        print("  - finish_reason='tool_calls' means model wants tools (not 'stop')")
+        print("  - Parallel calls: multiple items in tool_calls[] array")
+        print("  - tool_call_id must match when returning results")
+        print("  - tool_choice='required' forces at least one tool call")
+    else:
+        DEMO_QUERIES = [
+            "What is sqrt(256) + 2**8?",
+            "What's the weather in Tokyo and Paris right now?",
+            "Convert 100 km to miles and 70 kg to lbs.",
+            "What time is it, and what's 15% of 847?",
+        ]
+        for query in DEMO_QUERIES:
+            print("-" * 60)
+            chat_with_tools(query)

@@ -83,12 +83,13 @@ def cost_usd(input_tokens: int, output_tokens: int, cache_write: int = 0, cache_
     )
 
 
-print("=== PROMPT CACHING DEMO ===\n")
-print(f"Knowledge base size: {len(KNOWLEDGE_BASE)} chars (~{len(KNOWLEDGE_BASE)//4} tokens)\n")
+if __name__ == "__main__":
+    print("=== PROMPT CACHING DEMO ===\n")
+    print(f"Knowledge base size: {len(KNOWLEDGE_BASE)} chars (~{len(KNOWLEDGE_BASE)//4} tokens)\n")
 
-if not LIVE:
-    print("How caching works:")
-    print("""
+    if not LIVE:
+        print("How caching works:")
+        print("""
 # Mark the large prefix with cache_control
 system = [
     {
@@ -115,47 +116,47 @@ print(response.usage.cache_read_input_tokens)      # 2400 (90% cheaper!)
 #   reads:  99 × 2400 × $0.30/1M        = $0.071
 #   total:                               = $0.080  ← 89% cheaper
 """)
-else:
-    # First call — expect cache_creation_input_tokens > 0
-    print("Call 1 (cold — writing to cache):")
-    start = time.time()
-    r1 = client.messages.create(
-        model=MODEL,
-        max_tokens=256,
-        system=[
-            {"type": "text", "text": KNOWLEDGE_BASE, "cache_control": {"type": "ephemeral"}},
-            {"type": "text", "text": "Answer only from the handbook above. Be concise."},
-        ],
-        messages=[{"role": "user", "content": QUESTIONS[0]}]
-    )
-    t1 = time.time() - start
-    u1 = r1.usage
-    c1 = cost_usd(u1.input_tokens, u1.output_tokens, u1.cache_creation_input_tokens, u1.cache_read_input_tokens)
-    print(f"  Input: {u1.input_tokens}  Output: {u1.output_tokens}  Cache write: {u1.cache_creation_input_tokens}  Cache read: {u1.cache_read_input_tokens}")
-    print(f"  Latency: {t1:.2f}s  Cost: ${c1:.6f}")
-    print(f"  Answer: {r1.content[0].text[:100]}\n")
-
-    # Second call — expect cache_read_input_tokens > 0
-    print("Call 2 (warm — reading from cache):")
-    start = time.time()
-    r2 = client.messages.create(
-        model=MODEL,
-        max_tokens=256,
-        system=[
-            {"type": "text", "text": KNOWLEDGE_BASE, "cache_control": {"type": "ephemeral"}},
-            {"type": "text", "text": "Answer only from the handbook above. Be concise."},
-        ],
-        messages=[{"role": "user", "content": QUESTIONS[1]}]
-    )
-    t2 = time.time() - start
-    u2 = r2.usage
-    c2 = cost_usd(u2.input_tokens, u2.output_tokens, u2.cache_creation_input_tokens, u2.cache_read_input_tokens)
-    print(f"  Input: {u2.input_tokens}  Output: {u2.output_tokens}  Cache write: {u2.cache_creation_input_tokens}  Cache read: {u2.cache_read_input_tokens}")
-    print(f"  Latency: {t2:.2f}s  Cost: ${c2:.6f}")
-    print(f"  Answer: {r2.content[0].text[:100]}\n")
-
-    if u2.cache_read_input_tokens > 0:
-        savings = (1 - c2 / c1) * 100
-        print(f"✓ Cache hit confirmed! Cost reduced by ~{savings:.0f}%")
     else:
-        print("Cache miss (may need to call faster or check TTL)")
+        # First call — expect cache_creation_input_tokens > 0
+        print("Call 1 (cold — writing to cache):")
+        start = time.time()
+        r1 = client.messages.create(
+            model=MODEL,
+            max_tokens=256,
+            system=[
+                {"type": "text", "text": KNOWLEDGE_BASE, "cache_control": {"type": "ephemeral"}},
+                {"type": "text", "text": "Answer only from the handbook above. Be concise."},
+            ],
+            messages=[{"role": "user", "content": QUESTIONS[0]}]
+        )
+        t1 = time.time() - start
+        u1 = r1.usage
+        c1 = cost_usd(u1.input_tokens, u1.output_tokens, u1.cache_creation_input_tokens, u1.cache_read_input_tokens)
+        print(f"  Input: {u1.input_tokens}  Output: {u1.output_tokens}  Cache write: {u1.cache_creation_input_tokens}  Cache read: {u1.cache_read_input_tokens}")
+        print(f"  Latency: {t1:.2f}s  Cost: ${c1:.6f}")
+        print(f"  Answer: {r1.content[0].text[:100]}\n")
+
+        # Second call — expect cache_read_input_tokens > 0
+        print("Call 2 (warm — reading from cache):")
+        start = time.time()
+        r2 = client.messages.create(
+            model=MODEL,
+            max_tokens=256,
+            system=[
+                {"type": "text", "text": KNOWLEDGE_BASE, "cache_control": {"type": "ephemeral"}},
+                {"type": "text", "text": "Answer only from the handbook above. Be concise."},
+            ],
+            messages=[{"role": "user", "content": QUESTIONS[1]}]
+        )
+        t2 = time.time() - start
+        u2 = r2.usage
+        c2 = cost_usd(u2.input_tokens, u2.output_tokens, u2.cache_creation_input_tokens, u2.cache_read_input_tokens)
+        print(f"  Input: {u2.input_tokens}  Output: {u2.output_tokens}  Cache write: {u2.cache_creation_input_tokens}  Cache read: {u2.cache_read_input_tokens}")
+        print(f"  Latency: {t2:.2f}s  Cost: ${c2:.6f}")
+        print(f"  Answer: {r2.content[0].text[:100]}\n")
+
+        if u2.cache_read_input_tokens > 0:
+            savings = (1 - c2 / c1) * 100
+            print(f"✓ Cache hit confirmed! Cost reduced by ~{savings:.0f}%")
+        else:
+            print("Cache miss (may need to call faster or check TTL)")

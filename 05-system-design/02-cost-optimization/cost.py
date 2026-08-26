@@ -61,39 +61,40 @@ def call_cached(prompt: str, model: str) -> tuple[str, bool]:
     return result, False
 
 
-TASKS = [
-    "What is the capital of France?",
-    "What is the capital of France?",          # cache hit
-    "Convert 100 Fahrenheit to Celsius.",
-    "Analyze the trade-offs between RAG and fine-tuning for a production chatbot.",
-    "Design a rate limiting system for an LLM API handling 10k requests/sec.",
-    "List the days of the week.",
-]
+if __name__ == "__main__":
+    TASKS = [
+        "What is the capital of France?",
+        "What is the capital of France?",          # cache hit
+        "Convert 100 Fahrenheit to Celsius.",
+        "Analyze the trade-offs between RAG and fine-tuning for a production chatbot.",
+        "Design a rate limiting system for an LLM API handling 10k requests/sec.",
+        "List the days of the week.",
+    ]
 
-naive_model = "llama3.3:70b"
-total_cost, naive_total = 0.0, 0.0
+    naive_model = "llama3.3:70b"
+    total_cost, naive_total = 0.0, 0.0
 
-print(f"{'Task':<55} {'Tier':<10} {'Model':<16} {'Cache':<7} {'Cost'}")
-print("-" * 105)
+    print(f"{'Task':<55} {'Tier':<10} {'Model':<16} {'Cache':<7} {'Cost'}")
+    print("-" * 105)
 
-for task in TASKS:
-    tier = classify_tier(task)
-    model = route(tier)
-    result, cached = call_cached(task, model)
+    for task in TASKS:
+        tier = classify_tier(task)
+        model = route(tier)
+        result, cached = call_cached(task, model)
 
-    in_t = token_estimate(task)
-    out_t = token_estimate(result)
-    actual_cost = 0.0 if cached else cost_usd(model, in_t, out_t)
-    naive_cost = cost_usd(naive_model, in_t, token_estimate("placeholder response length"))
+        in_t = token_estimate(task)
+        out_t = token_estimate(result)
+        actual_cost = 0.0 if cached else cost_usd(model, in_t, out_t)
+        naive_cost = cost_usd(naive_model, in_t, token_estimate("placeholder response length"))
 
-    total_cost += actual_cost
-    naive_total += naive_cost
+        total_cost += actual_cost
+        naive_total += naive_cost
 
-    print(f"  {task[:52]:<52}  {tier:<10} {model:<16} {'HIT' if cached else 'miss':<7} ${actual_cost:.6f}")
+        print(f"  {task[:52]:<52}  {tier:<10} {model:<16} {'HIT' if cached else 'miss':<7} ${actual_cost:.6f}")
 
-print("-" * 105)
-print(f"\nRouted + cached total:  ${total_cost:.6f}")
-print(f"Naive (always premium): ${naive_total:.6f}")
-if naive_total > 0:
-    savings_pct = (1 - total_cost / naive_total) * 100
-    print(f"Savings:                {savings_pct:.0f}%")
+    print("-" * 105)
+    print(f"\nRouted + cached total:  ${total_cost:.6f}")
+    print(f"Naive (always premium): ${naive_total:.6f}")
+    if naive_total > 0:
+        savings_pct = (1 - total_cost / naive_total) * 100
+        print(f"Savings:                {savings_pct:.0f}%")

@@ -115,11 +115,12 @@ def test_recall(model, document: str, facts: list[dict], n_samples: int = 9):
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== GEMINI LONG CONTEXT DEMO ===\n")
+if __name__ == "__main__":
+    print("=== GEMINI LONG CONTEXT DEMO ===\n")
 
-if not LIVE:
-    print("Gemini long context API shape:\n")
-    print("""
+    if not LIVE:
+        print("Gemini long context API shape:\n")
+        print("""
 import google.generativeai as genai
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
@@ -142,46 +143,46 @@ response = model.generate_content([
     f"Question: {question}"
 ])
 """)
-    print("Model context limits (as of 2024):")
-    print("  gemini-1.5-flash: 1,000,000 tokens (cheapest)")
-    print("  gemini-1.5-pro:   1,000,000 tokens (highest quality)")
-    print("  gemini-1.0-pro:      32,000 tokens")
-    print()
-    print("Lost-in-the-middle research finding:")
-    print("  Facts at the START of a long doc: ~85-90% recall")
-    print("  Facts in the MIDDLE of a long doc: ~70-75% recall")
-    print("  Facts at the END of a long doc:   ~85-90% recall")
-    print()
-    print("Mitigation strategies:")
-    print("  1. Put critical info at start or end")
-    print("  2. Use RAG for precision needle-in-haystack retrieval")
-    print("  3. Repeat key facts in a summary at the top")
-    print("  4. Use context caching for repeated queries on same document")
-else:
-    model = genai.GenerativeModel(MODEL)
+        print("Model context limits (as of 2024):")
+        print("  gemini-1.5-flash: 1,000,000 tokens (cheapest)")
+        print("  gemini-1.5-pro:   1,000,000 tokens (highest quality)")
+        print("  gemini-1.0-pro:      32,000 tokens")
+        print()
+        print("Lost-in-the-middle research finding:")
+        print("  Facts at the START of a long doc: ~85-90% recall")
+        print("  Facts in the MIDDLE of a long doc: ~70-75% recall")
+        print("  Facts at the END of a long doc:   ~85-90% recall")
+        print()
+        print("Mitigation strategies:")
+        print("  1. Put critical info at start or end")
+        print("  2. Use RAG for precision needle-in-haystack retrieval")
+        print("  3. Repeat key facts in a summary at the top")
+        print("  4. Use context caching for repeated queries on same document")
+    else:
+        model = genai.GenerativeModel(MODEL)
 
-    # Build synthetic document
-    print("Building synthetic technical manual...")
-    document, facts = build_document(num_sections=60)
-    doc_words = len(document.split())
-    print(f"Document: {len(facts)} sections, ~{doc_words:,} words\n")
+        # Build synthetic document
+        print("Building synthetic technical manual...")
+        document, facts = build_document(num_sections=60)
+        doc_words = len(document.split())
+        print(f"Document: {len(facts)} sections, ~{doc_words:,} words\n")
 
-    # Count tokens
-    count = model.count_tokens(document)
-    print(f"Token count: {count.total_tokens:,} tokens\n")
+        # Count tokens
+        count = model.count_tokens(document)
+        print(f"Token count: {count.total_tokens:,} tokens\n")
 
-    # Simple QA test
-    print("--- Simple QA on the document ---\n")
-    sample_fact = facts[0]
-    question = f"What is the configuration code for Section 1 (Installation)?"
-    response = model.generate_content(
-        f"Technical manual:\n\n{document[:50000]}\n\nQuestion: {question}\nAnswer with just the code."
-    )
-    print(f"Q: {question}")
-    print(f"A: {response.text.strip()}")
-    print(f"Expected: {sample_fact['code']}\n")
+        # Simple QA test
+        print("--- Simple QA on the document ---\n")
+        sample_fact = facts[0]
+        question = f"What is the configuration code for Section 1 (Installation)?"
+        response = model.generate_content(
+            f"Technical manual:\n\n{document[:50000]}\n\nQuestion: {question}\nAnswer with just the code."
+        )
+        print(f"Q: {question}")
+        print(f"A: {response.text.strip()}")
+        print(f"Expected: {sample_fact['code']}\n")
 
-    # Lost-in-the-middle test
-    print("--- Lost-in-the-middle accuracy test ---")
-    print("Testing recall accuracy by document position...\n")
-    test_recall(model, document, facts, n_samples=9)
+        # Lost-in-the-middle test
+        print("--- Lost-in-the-middle accuracy test ---")
+        print("Testing recall accuracy by document position...\n")
+        test_recall(model, document, facts, n_samples=9)

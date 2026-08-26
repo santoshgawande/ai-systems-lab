@@ -59,24 +59,25 @@ def show_results(results, label: str):
         print(f"    {r.score:.3f}  [{p['category']}/{p['difficulty']}]  views={p['views']}  {p['title']}{status}")
 
 
-print("=== METADATA FILTERING DEMO ===\n")
+if __name__ == "__main__":
+    print("=== METADATA FILTERING DEMO ===\n")
 
-try:
-    from qdrant_client import QdrantClient
-    from qdrant_client.models import (
-        Distance, VectorParams, PointStruct,
-        Filter, FieldCondition, MatchValue, MatchAny, Range
-    )
-    client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, timeout=3)
-    client.get_collections()
-    connected = True
-except Exception as e:
-    connected = False
-    print(f"Qdrant not available: {e}")
+    try:
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import (
+            Distance, VectorParams, PointStruct,
+            Filter, FieldCondition, MatchValue, MatchAny, Range
+        )
+        client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT, timeout=3)
+        client.get_collections()
+        connected = True
+    except Exception as e:
+        connected = False
+        print(f"Qdrant not available: {e}")
 
-if not connected:
-    print("Showing filter syntax:\n")
-    print("""
+    if not connected:
+        print("Showing filter syntax:\n")
+        print("""
 # Exact match
 Filter(must=[FieldCondition(key="category", match=MatchValue(value="database"))])
 
@@ -104,68 +105,68 @@ Filter(should=[
     FieldCondition(key="difficulty", match=MatchValue(value="intermediate")),
 ])
 """)
-else:
-    dim = len(embed("test"))
+    else:
+        dim = len(embed("test"))
 
-    # Setup
-    client.recreate_collection(
-        collection_name=COLLECTION,
-        vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
-    )
+        # Setup
+        client.recreate_collection(
+            collection_name=COLLECTION,
+            vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
+        )
 
-    print(f"Embedding {len(DOCS)} documents...")
-    points = []
-    for doc in DOCS:
-        text = f"{doc['title']}. {BODY_MAP[doc['id']]}"
-        points.append(PointStruct(
-            id=doc["id"],
-            vector=embed(text),
-            payload={k: v for k, v in doc.items() if k != "id"}
-        ))
-    client.upsert(collection_name=COLLECTION, points=points)
-    print(f"Upserted {len(points)} points.\n")
+        print(f"Embedding {len(DOCS)} documents...")
+        points = []
+        for doc in DOCS:
+            text = f"{doc['title']}. {BODY_MAP[doc['id']]}"
+            points.append(PointStruct(
+                id=doc["id"],
+                vector=embed(text),
+                payload={k: v for k, v in doc.items() if k != "id"}
+            ))
+        client.upsert(collection_name=COLLECTION, points=points)
+        print(f"Upserted {len(points)} points.\n")
 
-    query = "database performance and query optimization"
-    qvec = embed(query)
-    print(f"Query: {query!r}\n")
+        query = "database performance and query optimization"
+        qvec = embed(query)
+        print(f"Query: {query!r}\n")
 
-    # 1. No filter
-    results = client.search(COLLECTION, query_vector=qvec, limit=5, with_payload=True)
-    show_results(results, "No filter (top 5)")
+        # 1. No filter
+        results = client.search(COLLECTION, query_vector=qvec, limit=5, with_payload=True)
+        show_results(results, "No filter (top 5)")
 
-    # 2. Category filter
-    results = client.search(
-        COLLECTION, query_vector=qvec, limit=5, with_payload=True,
-        query_filter=Filter(must=[FieldCondition(key="category", match=MatchValue(value="database"))])
-    )
-    show_results(results, "Filter: category=database")
+        # 2. Category filter
+        results = client.search(
+            COLLECTION, query_vector=qvec, limit=5, with_payload=True,
+            query_filter=Filter(must=[FieldCondition(key="category", match=MatchValue(value="database"))])
+        )
+        show_results(results, "Filter: category=database")
 
-    # 3. Published only (exclude drafts)
-    results = client.search(
-        COLLECTION, query_vector=qvec, limit=5, with_payload=True,
-        query_filter=Filter(must_not=[FieldCondition(key="published", match=MatchValue(value=False))])
-    )
-    show_results(results, "Filter: published only (exclude drafts)")
+        # 3. Published only (exclude drafts)
+        results = client.search(
+            COLLECTION, query_vector=qvec, limit=5, with_payload=True,
+            query_filter=Filter(must_not=[FieldCondition(key="published", match=MatchValue(value=False))])
+        )
+        show_results(results, "Filter: published only (exclude drafts)")
 
-    # 4. High-traffic intermediate articles
-    results = client.search(
-        COLLECTION, query_vector=qvec, limit=5, with_payload=True,
-        query_filter=Filter(must=[
-            FieldCondition(key="views", range=Range(gte=2000)),
-            FieldCondition(key="difficulty", match=MatchValue(value="intermediate")),
-        ])
-    )
-    show_results(results, "Filter: views>=2000 AND difficulty=intermediate")
+        # 4. High-traffic intermediate articles
+        results = client.search(
+            COLLECTION, query_vector=qvec, limit=5, with_payload=True,
+            query_filter=Filter(must=[
+                FieldCondition(key="views", range=Range(gte=2000)),
+                FieldCondition(key="difficulty", match=MatchValue(value="intermediate")),
+            ])
+        )
+        show_results(results, "Filter: views>=2000 AND difficulty=intermediate")
 
-    # 5. Backend or cache docs (OR)
-    results = client.search(
-        COLLECTION, query_vector=qvec, limit=5, with_payload=True,
-        query_filter=Filter(should=[
-            FieldCondition(key="category", match=MatchValue(value="database")),
-            FieldCondition(key="category", match=MatchValue(value="cache")),
-        ])
-    )
-    show_results(results, "Filter: category=database OR cache (should)")
+        # 5. Backend or cache docs (OR)
+        results = client.search(
+            COLLECTION, query_vector=qvec, limit=5, with_payload=True,
+            query_filter=Filter(should=[
+                FieldCondition(key="category", match=MatchValue(value="database")),
+                FieldCondition(key="category", match=MatchValue(value="cache")),
+            ])
+        )
+        show_results(results, "Filter: category=database OR cache (should)")
 
-    client.delete_collection(COLLECTION)
-    print("\nFiltering lets you scope vector search to a subset without losing accuracy.")
+        client.delete_collection(COLLECTION)
+        print("\nFiltering lets you scope vector search to a subset without losing accuracy.")

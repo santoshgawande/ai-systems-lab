@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 MMR (Maximal Marginal Relevance): diverse retrieval that avoids near-duplicate results.
 Trade-off: lambda=1.0 = pure relevance, lambda=0.0 = pure diversity.
@@ -88,18 +89,19 @@ def greedy_top_k(query_vec: list[float], doc_vecs: list[tuple[str, list[float]]]
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== MMR DIVERSITY DEMO ===\n")
-print(f"Query: {QUERY!r}\n")
+if __name__ == "__main__":
+    print("=== MMR DIVERSITY DEMO ===\n")
+    print(f"Query: {QUERY!r}\n")
 
-try:
-    httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
-    ollama_ok = True
-except Exception:
-    ollama_ok = False
+    try:
+        httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
+        ollama_ok = True
+    except Exception:
+        ollama_ok = False
 
-if not ollama_ok:
-    print("Ollama not running — showing MMR algorithm without live embeddings.\n")
-    print("""
+    if not ollama_ok:
+        print("Ollama not running — showing MMR algorithm without live embeddings.\n")
+        print("""
 MMR Algorithm (pseudocode):
   selected = []
   remaining = all_documents
@@ -122,48 +124,48 @@ lambda values:
   0.3  →  mostly diverse
   0.0  →  pure diversity (maximally spread docs regardless of query)
 """)
-    print("Why MMR matters:")
-    print("  Without MMR: top-3 results for 'Python error handling' might all be about try/except")
-    print("  With MMR:    top-3 covers try/except + database errors + logging — more useful")
-else:
-    print("Embedding documents...")
-    qvec = embed(QUERY)
-    if not qvec:
-        print("Embedding failed — check Ollama is running nomic-embed-text")
-        raise SystemExit(1)
+        print("Why MMR matters:")
+        print("  Without MMR: top-3 results for 'Python error handling' might all be about try/except")
+        print("  With MMR:    top-3 covers try/except + database errors + logging — more useful")
+    else:
+        print("Embedding documents...")
+        qvec = embed(QUERY)
+        if not qvec:
+            print("Embedding failed — check Ollama is running nomic-embed-text")
+            raise SystemExit(1)
 
-    doc_vecs = []
-    for doc in DOCS:
-        dvec = embed(doc["text"])
-        if dvec:
-            doc_vecs.append((doc["id"], dvec))
+        doc_vecs = []
+        for doc in DOCS:
+            dvec = embed(doc["text"])
+            if dvec:
+                doc_vecs.append((doc["id"], dvec))
 
-    doc_map = {d["id"]: d for d in DOCS}
+        doc_map = {d["id"]: d for d in DOCS}
 
-    print(f"\n{'─'*70}")
-    print("GREEDY TOP-5 (pure relevance, lambda=1.0):")
-    print(f"{'─'*70}")
-    greedy_ids = greedy_top_k(qvec, doc_vecs, top_k=5)
-    for rank, doc_id in enumerate(greedy_ids, 1):
-        sim = cosine(qvec, next(v for d, v in doc_vecs if d == doc_id))
-        text = doc_map[doc_id]["text"][:70]
-        print(f"  {rank}. [{doc_id}] sim={sim:.3f}  {text}...")
-
-    print(f"\n{'─'*70}")
-    for lam in [0.7, 0.5, 0.3]:
-        print(f"MMR TOP-5 (lambda={lam}):")
+        print(f"\n{'─'*70}")
+        print("GREEDY TOP-5 (pure relevance, lambda=1.0):")
         print(f"{'─'*70}")
-        mmr_ids = mmr(qvec, doc_vecs, top_k=5, lambda_=lam)
-        for rank, doc_id in enumerate(mmr_ids, 1):
+        greedy_ids = greedy_top_k(qvec, doc_vecs, top_k=5)
+        for rank, doc_id in enumerate(greedy_ids, 1):
+            sim = cosine(qvec, next(v for d, v in doc_vecs if d == doc_id))
             text = doc_map[doc_id]["text"][:70]
-            print(f"  {rank}. [{doc_id}]  {text}...")
-        print()
+            print(f"  {rank}. [{doc_id}] sim={sim:.3f}  {text}...")
 
-    print("Overlap between greedy and MMR(0.5):")
-    mmr_ids_50 = mmr(qvec, doc_vecs, top_k=5, lambda_=0.5)
-    overlap = set(greedy_ids) & set(mmr_ids_50)
-    promoted = set(mmr_ids_50) - set(greedy_ids)
-    print(f"  Shared: {sorted(overlap)}")
-    print(f"  MMR promoted (not in greedy top-5): {sorted(promoted)}")
-    print("\nKey takeaway: MMR surfaces docs from different semantic clusters.")
-    print("Use lambda=0.5-0.7 in production RAG for better answer coverage.")
+        print(f"\n{'─'*70}")
+        for lam in [0.7, 0.5, 0.3]:
+            print(f"MMR TOP-5 (lambda={lam}):")
+            print(f"{'─'*70}")
+            mmr_ids = mmr(qvec, doc_vecs, top_k=5, lambda_=lam)
+            for rank, doc_id in enumerate(mmr_ids, 1):
+                text = doc_map[doc_id]["text"][:70]
+                print(f"  {rank}. [{doc_id}]  {text}...")
+            print()
+
+        print("Overlap between greedy and MMR(0.5):")
+        mmr_ids_50 = mmr(qvec, doc_vecs, top_k=5, lambda_=0.5)
+        overlap = set(greedy_ids) & set(mmr_ids_50)
+        promoted = set(mmr_ids_50) - set(greedy_ids)
+        print(f"  Shared: {sorted(overlap)}")
+        print(f"  MMR promoted (not in greedy top-5): {sorted(promoted)}")
+        print("\nKey takeaway: MMR surfaces docs from different semantic clusters.")
+        print("Use lambda=0.5-0.7 in production RAG for better answer coverage.")

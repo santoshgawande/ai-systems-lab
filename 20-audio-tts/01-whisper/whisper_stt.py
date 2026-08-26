@@ -52,11 +52,12 @@ def make_sine_wav(frequency: float = 440.0, duration: float = 1.0, sample_rate: 
     return buf.getvalue()
 
 
-print("=== WHISPER SPEECH-TO-TEXT DEMO ===\n")
+if __name__ == "__main__":
+    print("=== WHISPER SPEECH-TO-TEXT DEMO ===\n")
 
-if not LIVE and not LOCAL_WHISPER:
-    print("API shapes:\n")
-    print("""
+    if not LIVE and not LOCAL_WHISPER:
+        print("API shapes:\n")
+        print("""
 from openai import OpenAI
 client = OpenAI()
 
@@ -76,95 +77,71 @@ with open("interview.mp3", "rb") as f:
         model="whisper-1",
         file=f,
         response_format="verbose_json",
-        timestamp_granularities=["word", "segment"],
+        timestamp_granularities=["word", "segment"]
     )
+for segment in transcript.segments:
+    print(f"[{segment.start:.2f}s - {segment.end:.2f}s] {segment.text}")
 
-print(f"Language: {transcript.language}")
-print(f"Duration: {transcript.duration:.1f}s")
-
-# Segment-level timestamps
-for seg in transcript.segments:
-    print(f"  [{seg.start:.1f}s–{seg.end:.1f}s] {seg.text}")
-
-# Word-level timestamps (very precise)
-for word in transcript.words:
-    print(f"  {word.start:.2f}–{word.end:.2f}: {word.word!r}")
-
-# 3. Translation (any language → English)
-with open("german_lecture.mp3", "rb") as f:
-    result = client.audio.translations.create(
+# 3. Translation to English (from any language)
+with open("french_audio.mp3", "rb") as f:
+    translation = client.audio.translations.create(
         model="whisper-1",
         file=f,
     )
-print(result.text)  # English
-
-# 4. Supported formats: mp3, mp4, mpeg, mpga, m4a, wav, webm
-# Max 25MB. For larger files: split into chunks first.
+print(translation.text)
 """)
-    print("Local faster-whisper (free, runs on Mac Studio):")
-    print("""
-pip install faster-whisper
+        print("Pricing: $0.006 per minute ($0.36/hour)")
+        print("Context size: up to 25MB per file (use chunking for larger files)")
+    elif LOCAL_WHISPER:
+        import tempfile
 
-from faster_whisper import WhisperModel
+        print("Using local faster-whisper (no API key needed)\n")
+        # We can't transcribe a pure sine wave — create a tiny silent WAV
+        # In a real test you'd use an actual speech file
+        wav_data = make_sine_wav(220.0, 1.0)
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            f.write(wav_data)
+            tmp_path = f.name
 
-# Model sizes: tiny, base, small, medium, large-v3
-model = WhisperModel("base", device="cpu", compute_type="int8")
+        print(f"Test audio: {tmp_path} ({len(wav_data)} bytes)")
+        print("(This is a sine tone — real speech would give meaningful transcription)\n")
 
-segments, info = model.transcribe("audio.mp3", beam_size=5)
-print(f"Language: {info.language} ({info.language_probability:.1%} confidence)")
-for segment in segments:
-    print(f"  [{segment.start:.2f}s → {segment.end:.2f}s] {segment.text}")
-""")
-elif LOCAL_WHISPER:
-    import tempfile
+        model = WhisperModel("tiny", device="cpu", compute_type="int8")
+        segments, info = model.transcribe(tmp_path, beam_size=1)
 
-    print("Using local faster-whisper (no API key needed)\n")
-    # We can't transcribe a pure sine wave — create a tiny silent WAV
-    # In a real test you'd use an actual speech file
-    wav_data = make_sine_wav(220.0, 1.0)
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-        f.write(wav_data)
-        tmp_path = f.name
+        print(f"Detected language: {info.language} (confidence: {info.language_probability:.1%})")
+        for seg in segments:
+            print(f"  [{seg.start:.2f}s–{seg.end:.2f}s] {seg.text!r}")
 
-    print(f"Test audio: {tmp_path} ({len(wav_data)} bytes)")
-    print("(This is a sine tone — real speech would give meaningful transcription)\n")
+        os.unlink(tmp_path)
+        print("\nTo transcribe real audio: pass a .mp3/.wav file path to model.transcribe()")
+    elif LIVE:
+        print("Using OpenAI Whisper API\n")
+        wav_data = make_sine_wav(440.0, 2.0)
+        print(f"Test audio: {len(wav_data)} bytes WAV (440Hz tone)\n")
+        print("Note: Whisper will likely transcribe silence as empty or gibberish.")
+        print("For a real demo, replace wav_data with an actual speech recording.\n")
 
-    model = WhisperModel("tiny", device="cpu", compute_type="int8")
-    segments, info = model.transcribe(tmp_path, beam_size=1)
+        # Transcription
+        try:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=("test.wav", io.BytesIO(wav_data), "audio/wav"),
+            )
+            print(f"Transcription: {transcript.text!r}")
+        except Exception as e:
+            print(f"Error: {e}")
 
-    print(f"Detected language: {info.language} (confidence: {info.language_probability:.1%})")
-    for seg in segments:
-        print(f"  [{seg.start:.2f}s–{seg.end:.2f}s] {seg.text!r}")
-
-    os.unlink(tmp_path)
-    print("\nTo transcribe real audio: pass a .mp3/.wav file path to model.transcribe()")
-elif LIVE:
-    print("Using OpenAI Whisper API\n")
-    wav_data = make_sine_wav(440.0, 2.0)
-    print(f"Test audio: {len(wav_data)} bytes WAV (440Hz tone)\n")
-    print("Note: Whisper will likely transcribe silence as empty or gibberish.")
-    print("For a real demo, replace wav_data with an actual speech recording.\n")
-
-    # Transcription
-    try:
-        transcript = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=("test.wav", io.BytesIO(wav_data), "audio/wav"),
-        )
-        print(f"Transcription: {transcript.text!r}")
-    except Exception as e:
-        print(f"Error: {e}")
-
-    # Verbose JSON with timestamps
-    try:
-        transcript_v = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=("test.wav", io.BytesIO(wav_data), "audio/wav"),
-            response_format="verbose_json",
-        )
-        print(f"Language: {transcript_v.language}")
-        print(f"Duration: {transcript_v.duration:.1f}s")
-        for seg in (transcript_v.segments or []):
-            print(f"  [{seg['start']:.1f}–{seg['end']:.1f}s] {seg['text']!r}")
-    except Exception as e:
-        print(f"Verbose JSON error: {e}")
+        # Verbose JSON with timestamps
+        try:
+            transcript_v = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=("test.wav", io.BytesIO(wav_data), "audio/wav"),
+                response_format="verbose_json",
+            )
+            print(f"Language: {transcript_v.language}")
+            print(f"Duration: {transcript_v.duration:.1f}s")
+            for seg in (transcript_v.segments or []):
+                print(f"  [{seg['start']:.1f}–{seg['end']:.1f}s] {seg['text']!r}")
+        except Exception as e:
+            print(f"Verbose JSON error: {e}")

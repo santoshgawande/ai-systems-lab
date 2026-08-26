@@ -132,6 +132,7 @@ def run(task: str, max_steps: int = 8):
     print("\n⚠ Max steps reached.")
 
 
-task = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else \
-    "Calculate the area of a circle with radius 7, then write the result to /tmp/circle_area.txt"
-run(task)
+if __name__ == "__main__":
+    task = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else \
+        "Calculate the area of a circle with radius 7, then write the result to /tmp/circle_area.txt"
+    run(task)

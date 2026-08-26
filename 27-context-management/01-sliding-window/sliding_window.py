@@ -141,68 +141,69 @@ def _call_llm(messages: list[dict]) -> str:
 
 # ─── Demo ─────────────────────────────────────────────────────────────────────
 
-print("=== SLIDING WINDOW CONTEXT DEMO ===\n")
+if __name__ == "__main__":
+    print("=== SLIDING WINDOW CONTEXT DEMO ===\n")
 
-# Show token counting
-sample_messages = [
-    {"role": "system", "content": "You are a helpful assistant for a software company."},
-    {"role": "user", "content": "How do I set up a PostgreSQL connection pool in Python?"},
-    {"role": "assistant", "content": "Use SQLAlchemy with create_engine and pool_size parameter..."},
-    {"role": "user", "content": "What's the difference between pool_size and max_overflow?"},
-    {"role": "assistant", "content": "pool_size is the number of permanent connections. max_overflow adds temporary ones..."},
-]
-
-print("Token counting example:")
-print(f"  Approx (char/4): {count_tokens_approx(sample_messages[1]['content'])} tokens")
-try:
-    import tiktoken
-    print(f"  Tiktoken exact:  {count_tokens_tiktoken(sample_messages[1]['content'])} tokens")
-except ImportError:
-    print(f"  (tiktoken not installed — using approx counting)")
-
-total = conversation_tokens(sample_messages)
-print(f"  Full conversation: {total} tokens\n")
-
-# Simulate window eviction
-print("Sliding window simulation (max_tokens=200):")
-trimmed, evicted = apply_sliding_window(sample_messages, max_tokens=200)
-print(f"  Original: {len(sample_messages)} messages, {conversation_tokens(sample_messages)} tokens")
-print(f"  After trim: {len(trimmed)} messages, {conversation_tokens(trimmed)} tokens")
-print(f"  Evicted: {evicted} oldest messages")
-print()
-
-# Live chatbot demo
-OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "http://localhost:11434")
-import httpx
-try:
-    httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
-    llm_ok = True
-except Exception:
-    llm_ok = OPENAI_KEY or bool(os.environ.get("ANTHROPIC_API_KEY"))
-
-if llm_ok:
-    print("Live chatbot with sliding window (limit=800 tokens for demo):\n")
-    bot = SlidingWindowChatbot(
-        system="You are a concise technical assistant. Keep answers under 3 sentences.",
-        max_context_tokens=800,
-    )
-    questions = [
-        "What is a database index?",
-        "What types of indexes exist in PostgreSQL?",
-        "When should I avoid using an index?",
-        "How do I check if my query is using an index?",
-        "What is a covering index?",
+    # Show token counting
+    sample_messages = [
+        {"role": "system", "content": "You are a helpful assistant for a software company."},
+        {"role": "user", "content": "How do I set up a PostgreSQL connection pool in Python?"},
+        {"role": "assistant", "content": "Use SQLAlchemy with create_engine and pool_size parameter..."},
+        {"role": "user", "content": "What's the difference between pool_size and max_overflow?"},
+        {"role": "assistant", "content": "pool_size is the number of permanent connections. max_overflow adds temporary ones..."},
     ]
-    for q in questions:
-        print(f"  User: {q}")
-        answer = bot.chat(q)
-        stats = bot.stats()
-        print(f"  Bot:  {answer[:120]}...")
-        print(f"  Stats: {stats['turns']} turns, {stats['total_tokens']} tokens ({stats['utilisation_pct']}% of limit)")
-        print()
-else:
-    print("No LLM available for live demo. Start Ollama or set API keys.")
-    print("\nSliding window rule:")
-    print("  Keep evicting oldest messages until conversation fits in token limit.")
-    print("  Always preserve: system message + most recent N turns.")
-    print("  Trade-off: lose early context but stay within cost/limit bounds.")
+
+    print("Token counting example:")
+    print(f"  Approx (char/4): {count_tokens_approx(sample_messages[1]['content'])} tokens")
+    try:
+        import tiktoken
+        print(f"  Tiktoken exact:  {count_tokens_tiktoken(sample_messages[1]['content'])} tokens")
+    except ImportError:
+        print(f"  (tiktoken not installed — using approx counting)")
+
+    total = conversation_tokens(sample_messages)
+    print(f"  Full conversation: {total} tokens\n")
+
+    # Simulate window eviction
+    print("Sliding window simulation (max_tokens=200):")
+    trimmed, evicted = apply_sliding_window(sample_messages, max_tokens=200)
+    print(f"  Original: {len(sample_messages)} messages, {conversation_tokens(sample_messages)} tokens")
+    print(f"  After trim: {len(trimmed)} messages, {conversation_tokens(trimmed)} tokens")
+    print(f"  Evicted: {evicted} oldest messages")
+    print()
+
+    # Live chatbot demo
+    OLLAMA_BASE = os.environ.get("OLLAMA_BASE", "http://localhost:11434")
+    import httpx
+    try:
+        httpx.get(f"{OLLAMA_BASE}/api/tags", timeout=2)
+        llm_ok = True
+    except Exception:
+        llm_ok = OPENAI_KEY or bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+    if llm_ok:
+        print("Live chatbot with sliding window (limit=800 tokens for demo):\n")
+        bot = SlidingWindowChatbot(
+            system="You are a concise technical assistant. Keep answers under 3 sentences.",
+            max_context_tokens=800,
+        )
+        questions = [
+            "What is a database index?",
+            "What types of indexes exist in PostgreSQL?",
+            "When should I avoid using an index?",
+            "How do I check if my query is using an index?",
+            "What is a covering index?",
+        ]
+        for q in questions:
+            print(f"  User: {q}")
+            answer = bot.chat(q)
+            stats = bot.stats()
+            print(f"  Bot:  {answer[:120]}...")
+            print(f"  Stats: {stats['turns']} turns, {stats['total_tokens']} tokens ({stats['utilisation_pct']}% of limit)")
+            print()
+    else:
+        print("No LLM available for live demo. Start Ollama or set API keys.")
+        print("\nSliding window rule:")
+        print("  Keep evicting oldest messages until conversation fits in token limit.")
+        print("  Always preserve: system message + most recent N turns.")
+        print("  Trade-off: lose early context but stay within cost/limit bounds.")
