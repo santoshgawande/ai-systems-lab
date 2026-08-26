@@ -239,6 +239,39 @@
 
 ---
 
+## Phase 8 — Next-Gen Scaling, Attention & Memory Architectures
+> Advanced architectural innovations powering 2026 flagship multimodal & long-context models.
+
+### 8.1 FlashAttention & IO-Aware Tiling
+- [x] **Online Softmax Algorithm** — 1-pass streaming softmax with dynamic rescaling
+- [x] **SRAM Block Tiling** — FlashAttention-2 on-chip computation, zero $N \times N$ HBM writes
+
+### 8.2 Multi-Head Latent Attention (DeepSeek MLA)
+- [x] **Latent KV Compression** — low-rank joint KV compression, decoupled RoPE keys, 93.3% VRAM savings
+- [x] **Inference Matrix Absorption** — direct query-latent projection without key decompression
+
+### 8.3 State Space Models & Mamba
+- [x] **Selective Scan Discretization** — input-dependent $\Delta(x_t)$ gating, Zero-Order Hold (ZOH)
+- [x] **Constant $O(1)$ Memory Inference** — zero KV-cache overhead, linear $O(N)$ training
+
+### 8.4 Multi-Token Prediction (MTP)
+- [x] **Multi-Token Prediction Heads** — simultaneous lookahead prediction ($x_{t+1} \dots x_{t+M}$)
+- [x] **Native Self-Speculative Decoding** — zero-overhead built-in draft proposals and verification
+
+### 8.5 Diffusion Transformers (DiT)
+- [x] **DiT Patchification & AdaLN-Zero** — 2D spatial grid to token sequence, timestep modulation
+- [x] **Classifier-Free Guidance (CFG)** — trajectory vector extrapolation, reverse Euler ODE steps
+
+### 8.6 Distributed Parallelism (Megatron-LM)
+- [x] **Column-Row Tensor Parallelism** — weight slicing, single All-Reduce barrier per MLP
+- [x] **1F1B Pipeline Parallelism** — steady-state micro-batch scheduling, activation memory bounding
+
+### 8.7 Agentic Memory Graphs
+- [x] **Dynamic Fact Extraction** — atomic entity-predicate-object knowledge extraction
+- [x] **Memory Graph Consolidation** — temporal contradiction resolution and ground-truth maintenance
+
+---
+
 ## Mental Model Checklist (Can You Answer These?)
 
 ### API & Tokens

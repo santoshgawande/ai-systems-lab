@@ -47,7 +47,14 @@ ai-systems-lab/
 ├── 32-mcp-protocol/             # Model Context Protocol JSON-RPC 2.0 server & client orchestrator (2 labs)
 ├── 33-alignment-dpo-rlhf/       # Direct Preference Optimization (DPO) loss, preference dataset pipeline (2 labs)
 ├── 34-reasoning-models/         # test-time compute budget forcing, Process Reward Model (PRM) verifier (2 labs)
-└── 35-mixture-of-experts/       # sparse MoE top-k gating, auxiliary load balancing loss (2 labs)
+├── 35-mixture-of-experts/       # sparse MoE top-k gating, auxiliary load balancing loss (2 labs)
+├── 36-flash-attention/          # online softmax algorithm, SRAM block-tiling kernel (2 labs)
+├── 37-multi-head-latent-attention/ # DeepSeek MLA low-rank KV compression, matrix absorption (2 labs)
+├── 38-state-space-mamba/        # selective scan SSM, constant O(1) memory inference (2 labs)
+├── 39-multi-token-prediction/   # MTP prediction heads, native self-speculative decoding (2 labs)
+├── 40-diffusion-transformers/   # DiT patchification, AdaLN-Zero, Classifier-Free Guidance (2 labs)
+├── 41-distributed-tensor-parallelism/ # Megatron-LM Column-Row TP, 1F1B pipeline parallelism (2 labs)
+└── 42-agentic-memory-graph/     # dynamic fact extraction, memory graph conflict consolidation (2 labs)
 ```
 
 ## How to use
