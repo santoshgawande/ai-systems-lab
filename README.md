@@ -41,7 +41,13 @@ ai-systems-lab/
 ├── 26-multi-agent-patterns/     # orchestrator-subagent, agent-as-tool (2 labs)
 ├── 27-context-management/       # sliding window, summarisation, human-in-the-loop (3 labs)
 ├── 28-autonomous-runner/        # overnight task queue runner — uses Claude Code quota while you sleep
-└── 29-graph-rag/                # Microsoft GraphRAG, knowledge graph extraction, hierarchical community search (2 labs)
+├── 29-graph-rag/                # Microsoft GraphRAG, knowledge graph extraction, hierarchical community search (2 labs)
+├── 30-speculative-decoding/     # speculative sampling, Medusa multi-head tree attention (2 labs)
+├── 31-paged-attention-kv-cache/ # vLLM physical block allocator, Radix prefix caching (2 labs)
+├── 32-mcp-protocol/             # Model Context Protocol JSON-RPC 2.0 server & client orchestrator (2 labs)
+├── 33-alignment-dpo-rlhf/       # Direct Preference Optimization (DPO) loss, preference dataset pipeline (2 labs)
+├── 34-reasoning-models/         # test-time compute budget forcing, Process Reward Model (PRM) verifier (2 labs)
+└── 35-mixture-of-experts/       # sparse MoE top-k gating, auxiliary load balancing loss (2 labs)
 ```
 
 ## How to use

@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a Streamlit inspector that shows retrieved chunks with similarity scores.
   Runs on Docker with an embedded Chroma store and a bundled Ollama service, so it
   needs neither the homelab nor an API key.
+- `30-speculative-decoding/` — Leviathan speculative sampling and Medusa multi-head tree attention.
+- `31-paged-attention-kv-cache/` — vLLM physical block memory allocator and Radix-tree prefix KV caching.
+- `32-mcp-protocol/` — Anthropic Model Context Protocol (MCP) JSON-RPC 2.0 server and multi-server client orchestrator.
+- `33-alignment-dpo-rlhf/` — Direct Preference Optimization (DPO) loss engine and preference dataset pipeline.
+- `34-reasoning-models/` — Test-Time Compute (TTC) thinking budget parser and Process Reward Model (PRM) step verifier.
+- `35-mixture-of-experts/` — Sparse MoE Top-K gating router and auxiliary load balancing loss engine.
 - Cross-links between the three RAG levels — `03-rag/` (stages in isolation),
   `06-build-your-own/mini-rag/` (one file) and `06-build-your-own/rag-agent/`
   (full app) — so the overlap reads as a deliberate progression.

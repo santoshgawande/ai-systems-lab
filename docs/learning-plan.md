@@ -210,6 +210,35 @@
 
 ---
 
+## Phase 7 — Frontier Production AI Systems (2025–2026 Standards)
+> The latest production techniques powering next-generation models and infrastructure.
+
+### 7.1 Speculative Decoding
+- [x] **Speculative Sampling** — draft-target rejection sampling, speedup math, zero quality degradation
+- [x] **Medusa Multi-Head Decoding** — multiple heads on single base model, tree attention, candidate branches
+
+### 7.2 PagedAttention & KV-Cache Management
+- [x] **Physical Block Allocator** — virtual memory paging for KV-cache, zero memory fragmentation
+- [x] **Radix Prefix Caching** — prefix tree matching, sub-millisecond TTFT, Copy-on-Write sharing
+
+### 7.3 Model Context Protocol (MCP)
+- [x] **MCP Server** — JSON-RPC 2.0 protocol, capability negotiation, tool & resource registration
+- [x] **MCP Client Orchestrator** — multi-server discovery, schema translation, dynamic tool dispatch
+
+### 7.4 Alignment & Direct Preference Optimization
+- [x] **DPO Loss & Implicit Rewards** — analytic RLHF solution, reward margin calculation, beta temperature
+- [x] **Preference Dataset Pipeline** — pairwise generation, verbosity length-bias mitigation, margin filtering
+
+### 7.5 Reasoning Models & Test-Time Compute
+- [x] **Test-Time Compute (TTC)** — dynamic thinking budget scaling, `<think>` trace parsing, self-correction
+- [x] **Process Reward Model (PRM)** — step-level supervision, early error localization, Best-of-N search
+
+### 7.6 Sparse Mixture of Experts (MoE)
+- [x] **Top-K Gating Router** — sparse routing, softmax normalization, DeepSeek shared expert isolation
+- [x] **Auxiliary Load Balancing Loss** — routing collapse mitigation, expert capacity limits, token dropping
+
+---
+
 ## Mental Model Checklist (Can You Answer These?)
 
 ### API & Tokens
